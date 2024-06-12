@@ -1,0 +1,4 @@
+排行榜(leaderboard)
+1   Wang                  1216
+2   cheese                1184
+排行榜测试中,加dc群使用
