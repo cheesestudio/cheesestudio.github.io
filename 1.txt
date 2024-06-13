@@ -1,7 +1,8 @@
-1   cheese                1231
+1   Urara                 1217
 2   Wang                  1216
 3   skauy                 1216
-4   なおnao                1185
-5   Gamling               1184
-6   IMPEI                 1184
-7   Hoshi-san             1184
+4   cheese                1214
+5   nao5267               1185
+6   Gamling               1184
+7   IMPEI                 1184
+8   Hoshi-san             1184
