@@ -1,8 +1,6 @@
-排行榜(leaderboard)
 1   cheese                1216
 2   Wang                  1216
 3   skauy                 1216
 4   Gamling               1184
 5   IMPEI                 1184
 6   Hoshi-san             1184
-测试中,加dc群使用(join our discord group)
