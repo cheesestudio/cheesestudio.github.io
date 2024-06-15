@@ -1,15 +1,15 @@
 1   cheese                1303
 2   skauy                 1231
 3   Urara                 1217
-4   Wang                  1216
-5   /yuru                 1216
-6   tsukapon0903          1216
-7   wuyi                  1200
-8   Mr.Dog                1188
-9   tibi nya~             1188
+4   /yuru                 1216
+5   tsukapon0903          1216
+6   Wang                  1216
+7   tibi nya~             1204
+8   wuyi                  1200
+9   Mr.Dog                1188
 10  _atene                1186
 11  yoora <3              1185
 12  Techonor              1184
-13  IMPEI                 1184
-14  Gamling               1184
-15  banisora              1184
+13  banisora              1184
+14  IMPEI                 1184
+15  Gamling               1184
