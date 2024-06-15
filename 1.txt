@@ -1,15 +1,15 @@
-1   cheese                1314
+1   cheese                1294
 2   skauy                 1231
-3   Urara                 1217
-4   /yuru                 1216
-5   tsukapon0903          1216
-6   Rising_Neko           1216
-7   Wang                  1216
-8   tibi nya~             1204
+3   tibi nya~             1224
+4   Urara                 1217
+5   /yuru                 1216
+6   tsukapon0903          1216
+7   Rising_Neko           1216
+8   Wang                  1216
 9   DullEyeMob            1189
 10  Mr.Dog                1188
 11  _atene                1186
 12  yoora <3              1185
 13  wuyi                  1184
 14  UZ                    1184
-15  IMPEI                 1184
+15  Techonor              1184
