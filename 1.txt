@@ -13,9 +13,3 @@
 13  wuyi                  1184
 14  UZ                    1184
 15  Techonor              1184
-16  IMPEI                 1184
-17  banisora              1184
-18  Gamling               1184
-19  Lycoris               1174
-20  Hoshi-san             1173
-21   nao                  1171```
