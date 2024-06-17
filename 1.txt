@@ -1,9 +1,9 @@
-1   cheese                1363
+1   cheese                1341
 2   tibi nya~             1271
-3   skauy                 1231
-4   Rising_Neko           1216
-5   /yuru                 1216
-6   tsukapon0903          1216
+3   tsukapon              1238
+4   skauy                 1231
+5   Rising_Neko           1216
+6   /yuru                 1216
 7   Wang                  1216
 8   Hoshi-san             1196
 9   wuyi                  1192
@@ -22,3 +22,6 @@
 22  Lycoris               1174
 23   nao                  1171
 24  thegreatdevil         1120```
+
+ Submissions:
+<#1250266541082284072>
