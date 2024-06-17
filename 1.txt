@@ -2,10 +2,10 @@
 2   tibi nya~             1271
 3   /yuru                 1262
 4   tsukapon              1238
-5   skauy                 1231
-6   aun's                 1222
-7   Wang                  1216
-8   Rising_Neko           1216
+5   aun's                 1235
+6   skauy                 1231
+7   Rising_Neko           1216
+8   Wang                  1216
 9   Hoshi-san             1208
 10  wuyi                  1192
 11  ༺༽༼༻                  1191
@@ -14,15 +14,15 @@
 14  yoora <3              1185
 15  IMPEI                 1184
 16  Zara-                 1184
-17  banisora              1184
-18  UZ                    1184
-19  Gamling               1184
+17  UZ                    1184
+18  Gamling               1184
+19  banisora              1184
 20                        1180
-21   nao                  1175
-22  Urara                 1175
+21  Urara                 1175
+22   nao                  1175
 23  Lycoris               1174
 24  murame                1172
-25  Techonor              1171
+25  Techonor              1158
 26  thegreatdevil         1115```
 
  Submissions:
