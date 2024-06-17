@@ -1,4 +1,4 @@
-1   cheese123             1341
+1   cheese                1350
 2   tibi nya~             1271
 3   tsukapon              1238
 4   skauy                 1231
@@ -17,7 +17,7 @@
 17  IMPEI                 1184
 18  banisora              1184
 19  Gamling               1184
-20  Techonor              1184
+20  Techonor              1175
 21  Urara                 1175
 22  Lycoris               1174
 23   nao                  1158
