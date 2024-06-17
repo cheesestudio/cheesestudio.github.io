@@ -1,8 +1,8 @@
 1   cheese                1350
 2   tibi nya~             1271
-3   tsukapon              1238
-4   skauy                 1231
-5   /yuru                 1229
+3   /yuru                 1243
+4   tsukapon              1238
+5   skauy                 1231
 6   Rising_Neko           1216
 7   Wang                  1216
 8   Hoshi-san             1196
@@ -10,16 +10,16 @@
 10  ༺༽༼༻                  1191
 11  DullEyeMob            1189
 12  Mr.Dog                1188
-13  _atene                1186
-14  yoora <3              1185
-15  Zara-                 1184
-16  UZ                    1184
-17  IMPEI                 1184
-18  banisora              1184
-19  Gamling               1184
-20  Techonor              1175
-21  Urara                 1175
-22  Lycoris               1174
+13  yoora <3              1185
+14  UZ                    1184
+15  IMPEI                 1184
+16  banisora              1184
+17  Zara-                 1184
+18  Gamling               1184
+19  Techonor              1175
+20  Urara                 1175
+21  Lycoris               1174
+22  murame                1172
 23   nao                  1158
 24  thegreatdevil         1120```
 
