@@ -1,6 +1,6 @@
-1   cheese                1328
+1   cheese                1309
 2   tibi nya~             1271
-3   /yuru                 1243
+3   /yuru                 1262
 4   tsukapon              1238
 5   skauy                 1231
 6   aun's                 1222
