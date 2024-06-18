@@ -1,4 +1,4 @@
-1   cheese                1334
+1   cheese                1344
 2   tibi nya~             1271
 3   /yuru                 1262
 4   tsukapon              1238
@@ -6,7 +6,7 @@
 6   skauy                 1231
 7   Wang                  1216
 8   Rising_Neko           1216
-9   Hoshi-san             1208
+9   Hoshi-san             1209
 10  wuyi                  1192
 11  ༺༽༼༻                  1191
 12  11err0s               1190
@@ -25,7 +25,7 @@
 25  Lycoris               1174
 26  murame                1172
 27  Techonor              1158
-28  thegreatdevil         1119```
+28  thegreatdevil         1108```
 
  Submissions:
 <#1250266541082284072>
