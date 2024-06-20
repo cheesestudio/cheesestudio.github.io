@@ -21,7 +21,7 @@
 21  Gamling               1184
 22  IMPEI                 1184
 23  Jiemo                 1181
-24                        1180
+24  TrainNanami           1180
 25  Urara                 1175
 26  Lycoris               1174
 27  murame                1172
