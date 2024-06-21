@@ -1,4 +1,4 @@
-1   cheese                1388
+1   DRAK-RK               1388
 2   /yuru                 1262
 3   tsukapon              1238
 4   tibi nya~             1237
@@ -7,26 +7,27 @@
 7   Rising_Neko           1221
 8   Wang                  1216
 9   Hoshi-san             1209
-10  wuyi                  1192
-11  ༺༽༼༻                  1191
-12   nao                  1190
+10  rk_2257               1200
+11  wuyi                  1192
+12  ༺༽༼༻                  1191
 13  11err0s               1190
-14  DullEyeMob            1189
-15  Mr.Dog                1188
-16  yoora <3              1185
-17  AkoNoMi               1185
-18  Zara-                 1184
-19  UZ                    1184
-20  banisora              1184
-21  Gamling               1184
-22  IMPEI                 1184
-23  Jiemo                 1181
-24  TrainNanami           1180
-25  Urara                 1175
-26  Lycoris               1174
-27  murame                1172
-28  Techonor              1143
-29  thegreatdevil         1108```
+14   nao                  1190
+15  DullEyeMob            1189
+16  Mr.Dog                1188
+17  yoora <3              1185
+18  AkoNoMi               1185
+19  Gamling               1184
+20  Zara-                 1184
+21  IMPEI                 1184
+22  UZ                    1184
+23  banisora              1184
+24  Jiemo                 1181
+25  TrainNanami           1180
+26  Urara                 1175
+27  Lycoris               1174
+28  murame                1172
+29  Techonor              1143
+30  thegreatdevil         1108```
 
  Submissions:
 <#1250266541082284072>
