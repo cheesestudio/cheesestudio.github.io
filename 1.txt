@@ -1,4 +1,4 @@
-1   cheese                1373
+1   cheese                1381
 2   /yuru                 1262
 3   tsukapon              1238
 4   tibi nya~             1237
@@ -10,25 +10,26 @@
 10  Rising_Neko           1205
 11  ballfuilt_            1205
 12  rk_2257               1200
-13  wuyi                  1192
-14  ༺༽༼༻                  1191
-15  11err0s               1190
-16  DullEyeMob            1189
-17  Mr.Dog                1188
-18  AkoNoMi               1185
+13  3333                  1192
+14  wuyi                  1192
+15  ༺༽༼༻                  1191
+16  11err0s               1190
+17  DullEyeMob            1189
+18  Mr.Dog                1188
 19  yoora <3              1185
-20  UZ                    1184
-21  banisora              1184
-22  Gamling               1184
-23  IMPEI                 1184
+20  AkoNoMi               1185
+21  Gamling               1184
+22  IMPEI                 1184
+23  UZ                    1184
 24  Zara-                 1184
-25  Jiemo                 1181
-26  TrainNanami           1180
-27  Urara                 1175
-28  Lycoris               1174
-29  murame                1172
-30  Techonor              1149
-31  thegreatdevil         1108```
+25  banisora              1184
+26  Jiemo                 1181
+27  TrainNanami           1180
+28  Urara                 1175
+29  Lycoris               1174
+30  murame                1172
+31  Techonor              1149
+32  thegreatdevil         1108```
 
  Submissions:
 <#1250266541082284072>
