@@ -1,11 +1,11 @@
 1   cheese                1381
 2   /yuru                 1262
 3   tsukapon              1238
-4   tibi nya~             1237
-5   aun's                 1235
-6   skauy                 1231
-7   Wang                  1216
-8    nao                  1210
+4   aun's                 1235
+5   skauy                 1231
+6    nao                  1227
+7   tibi nya~             1220
+8   Wang                  1216
 9   3333                  1208
 10  Rising_Neko           1205
 11  ballfuilt_            1205
