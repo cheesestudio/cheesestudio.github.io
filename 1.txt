@@ -1,9 +1,9 @@
 1   cheese                1381
 2   /yuru                 1262
-3   tsukapon              1238
-4   aun's                 1235
-5   skauy                 1231
-6    nao                  1227
+3    nao                  1239
+4   tsukapon              1238
+5   aun's                 1235
+6   skauy                 1231
 7   tibi nya~             1220
 8   Wang                  1216
 9   3333                  1208
@@ -28,7 +28,7 @@
 28  Urara                 1175
 29  Lycoris               1174
 30  murame                1172
-31  Techonor              1149
+31  Techonor              1137
 32  thegreatdevil         1108```
 
  Submissions:
