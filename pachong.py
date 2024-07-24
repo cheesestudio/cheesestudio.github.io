@@ -12,4 +12,4 @@ if __name__ == "__main__":
     rul = re.compile("<div.*?<p.*?>(?P<rank>[0-9]*).*?<.*?button.*?<p>(?P<name>.*?)</p.*?<p.*?>(?P<score>.*?)</p>.*?</div>")
     with open(file="1.txt",mode="w", encoding="utf-8") as f:
         for i in re.finditer(rul, resp):\
-            f.write(f"{i.group('rank'):<3}{i.group('name'):<3} {i.group('score')}\n")
+            f.write(f"{i.group('rank'):}.{i.group('name'):<3} {i.group('score')}\n")
