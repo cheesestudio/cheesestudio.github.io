@@ -1,24 +1,24 @@
-1st `起司 cheese チーズ` 1250
-2cd`Urara` 1244
-3td: `星さん［Hoshi-san］` 1225
-4th `なお~nao` 1219
-4th `ゆる /yuru` 1219
-6th `Techonor` 1216
-7th `tibi nya~` 1215
-8th `rising_neko` 1205
-9th `RokaOvO` 1201
-10th `つかぽん tsukapon` 1200
-10th `Drak-RK` 1200
-10th `Coffee` 1200
-10th `aun_s` 1200
-10th `skauy` 1200
-15th `Wang` 1199
-16th `wuyi0_0` 1192
-17th `ballfuilt_けだま` 1188
-18th `むらしい` 1186
-18th `X 牢毕豆 X` 1186
-20th `Cocoa_Game` 1185
-21st `༺༽闇閻༼༻` 1175
-22nd `dthd12` 1170
-23rd `3333` 1161
-24th `Ayagiri_Wahara` 1157
+1st 起司 cheese チーズ  1250
+2nd Urara  1244
+3td: 星さん［Hoshi-san］  1225
+4th なお~nao  1219
+4th ゆる /yuru  1219
+6th Techonor  1216
+7th tibi nya~  1215
+8th rising_neko  1205
+9th RokaOvO  1201
+10th つかぽん tsukapon  1200
+10th Drak-RK  1200
+10th Coffee  1200
+10th aun_s  1200
+10th skauy  1200
+15th Wang  1199
+16th wuyi0_0  1192
+17th ballfuilt_けだま  1188
+18th むらしい  1186
+18th X 牢毕豆 X  1186
+20th Cocoa_Game  1185
+21st ༺༽闇閻༼༻  1175
+22nd dthd12  1170
+23rd 3333  1161
+24th Ayagiri_Wahara  1157
