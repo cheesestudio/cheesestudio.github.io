@@ -1,4 +1,4 @@
-1.<color=yellow>起司cheeseチーズ</color> 1258
+.起司cheeseチーズ 1258
 2.Urara 1244
 3.星さん［Hoshi-san］ 1238
 4.ゆる/yuru 1235
@@ -6,26 +6,45 @@
 6.つかぽんtsukapon 1218
 7.せめぇ丸 1217
 8.itsdurza 1216
-9.tibi nya~ 1215
-10.rising_neko 1205
-11.なお~nao 1201
-11.RokaOvO 1201
-13.脆脆鲨 1200
-13.Drak-RK 1200
-13.wang7394 1200
-13.Coffee 1200
-13.aun_s 1200
-13.skauy 1200
-19.Techonor 1199
-20.wuyi0_0 1192
-21.ballfuilt_けだま 1188
-22.むらしい 1186
-22.X牢毕豆X 1186
-24.Cocoa_Game 1185
-25.lycoris0101 1184
-26.Jiemo 1183
-27.༺༽闇閻༼༻ 1175
-28.dthd12 1170
-29.3333 1161
-29.魔ืุ王ืุNืุoืุ.1ืุ 1161
-31.Ayagiri_Wahara 1157
+8.RhyminBeast 1216
+10.tibi nya~ 1215
+11.rising_neko 1205
+12.Cocoa Game 1202
+13.なお~nao 1201
+13.RokaOvO 1201
+13.wang7394 1201
+16.lilith_whisper 1200
+16.鈴木鏡•Suzuki• 1200
+16.龙猫xd 1200
+16.soleil22 1200
+16.PaPaBu 1200
+16.脆脆鲨 1200
+16.Drak-RK 1200
+16.mzy_1019 1200
+16.Gamling 1200
+16.S   1200
+16.Madi's Runa 1200
+16.DullEyeMob 1200
+16.*•♡Nora♡°* 1200
+16.短发  1200
+16.Mr.Dog 1200
+16.UZ  1200
+16.Coffee 1200
+16.AkoNoMi 1200
+16.EHCOOOOOO! 1200
+16.aun_s 1200
+16.skauy 1200
+37.Techonor 1199
+38.wuyi0_0 1192
+39.ballfuilt_けだま 1188
+40.むらしい 1186
+40.X牢毕豆X 1186
+42.lycoris0101 1184
+42.Delan 1184
+44.Jiemo 1183
+45.༺༽闇閻༼༻ 1175
+46.dthd12 1170
+47.3333 1161
+47.魔ืุ王ืุNืุoืุ.1ืุ 1161
+49.Ayagiri_Wahara 1157
+50.Cocoa Game 1000
