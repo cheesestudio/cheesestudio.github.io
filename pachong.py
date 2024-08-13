@@ -13,5 +13,5 @@ if __name__ == "__main__":
     with open(file="1.txt",mode="w", encoding="utf-8") as f:
         index = 1
         for i in re.finditer(rul, resp):
-            f.write(f"{index}.{i.group('name').replace(' ', ' '):<3} {i.group('elo')}\n")
+            f.write(f"{index}.{i.group('name').replace(' ', ' ').replace('_', ' ').replace('[', '').replace(']', '').replace('［', '').replace('］', '')} {i.group('elo')}\n")
             index += 1
