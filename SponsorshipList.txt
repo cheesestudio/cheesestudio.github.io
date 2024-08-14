@@ -5,4 +5,5 @@
 VRC台球俱乐部
 QQ群:780855553
 
-开源改版台球桌https://github.com/cheesestudio/VRChat-Pool-table-15-red-snooker-Pyramid-Chinese-8-MS-VRCSA-Billiards
+开源改版台球桌
+https://github.com/cheesestudio/VRChat-Pool-table-15-red-snooker-Pyramid-Chinese-8-MS-VRCSA-Billiards
