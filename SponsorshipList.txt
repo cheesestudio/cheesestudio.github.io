@@ -1,9 +1,9 @@
 台球桌:Cheese ≻v≺,WangQAQ,RokaOvO,eijis-pan,Sacchan
 整个地图:COCOA GAME
-特别鸣谢:Techonor,思君不得见，怨君不得闲,PaPaBu
+特别鸣谢:Techonor,思君不得见，怨君不得闲,PaPaBu,Hrenact
 
-VRC台球俱乐部
-QQ群:780855553
+VRC中文台球俱乐部
+QQ群:780855553	寻找球友,日常闲聊.汇报bug,地图更新
 
 开源改版台球桌
 https://github.com/cheesestudio/VRChat-Pool-table-15-red-snooker-Pyramid-Chinese-8-MS-VRCSA-Billiards
