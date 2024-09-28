@@ -76,7 +76,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
         // 更新分数  
         // 假设根据净胜场次调整K因子  
         $netWins = abs($score1 - $score2);  
-        $adjustedKFactor = $K_FACTOR * (1 + $netWins / 4); // 假设每多赢一场，K因子增加20%  斯诺克就是 10倍
+        $adjustedKFactor = $K_FACTOR * (1 + $netWins / 4); // 假设每多赢一场，K因子增加20%  斯诺克就是 8倍
   
         // 使用调整后的K因子来更新评分  
         updateEloRating($winner, $loser, $playersScores, $adjustedKFactor);
