@@ -13,8 +13,18 @@ function updateEloRating($winner, $loser, &$ratings, $K_FACTOR = 32,$INITIAL_RAT
   
     $expectedLoser = 1 / (1 + pow(10, (($winnerRating - $loserRating) / 400)));  
     $eloLoss = $K_FACTOR * ($expectedLoser - 1);  
-  
-    $ratings[$winner] = $winnerRating + $eloGain;  
+    
+    if($ratings[$winner] < 1500 && $ratings[$loser] <1500)
+    {
+        $ratings[$winner] = $winnerRating + $eloGain + 10;
+        echo "分数" + $eloGain + 10;
+    }
+    else 
+    {
+        $ratings[$winner] = $winnerRating + $eloGain;
+        echo "分数" + $eloGain;
+    }
+
     $ratings[$loser] = $loserRating + $eloLoss;  
 }  
 // 假设这是通过GET请求提交数据的处理页面  
