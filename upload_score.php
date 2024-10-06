@@ -4,28 +4,25 @@
 $K_FACTOR = 32; // K因子，决定评分变化的幅度  
 $INITIAL_RATING = 1500; // 初始评分  
   
-function updateEloRating($winner, $loser, &$ratings, $K_FACTOR = 32,$INITIAL_RATING = 1500) {  
+function updateEloRating($winner, $loser, &$ratings, $K_FACTOR = 32,$INITIAL_RATING = 1500) 
+{  
     $winnerRating = $ratings[$winner] ?? $INITIAL_RATING;  
     $loserRating = $ratings[$loser] ?? $INITIAL_RATING;  
   
     $expectedWinner = 1 / (1 + pow(10, (($loserRating - $winnerRating) / 400)));  
-    $eloGain = $K_FACTOR * (1 - $expectedWinner);  
-  
-    $expectedLoser = 1 / (1 + pow(10, (($winnerRating - $loserRating) / 400)));  
-    $eloLoss = $K_FACTOR * ($expectedLoser - 1);  
-    
-    if($ratings[$winner] < 1500 && $ratings[$loser] <1500)
-    {
-        $ratings[$winner] = $winnerRating + $eloGain + 10;
-        echo "分数" + $eloGain + 10;
-    }
-    else 
-    {
-        $ratings[$winner] = $winnerRating + $eloGain;
-        echo "分数" + $eloGain;
-    }
+    $eloGain = $K_FACTOR * (1 - $expectedWinner);
 
-    $ratings[$loser] = $loserRating + $eloLoss;  
+    // Calculate new ratings
+    $newWinnerRating = $winnerRating + ($winnerRating < 1500 && $loserRating < 1500 ? $eloGain + 10 : $eloGain);
+    $newLoserRating = $loserRating - ($K_FACTOR * $expectedWinner);
+
+    // Update ratings
+    $ratings[$winner] = $newWinnerRating;
+    $ratings[$loser] = $newLoserRating;
+
+    // Output score changes and current scores
+    echo "Winner: $winner, New Rating: " . floor($newWinnerRating) . ", Change: " . floor($eloGain + ($winnerRating < 1500 && $loserRating < 1500 ? 10 : 0)) . "\n";
+    echo "Loser: $loser, New Rating: " . floor($newLoserRating) . ", Change: " . floor(-($K_FACTOR * $expectedWinner)) . "\n";
 }  
 // 假设这是通过GET请求提交数据的处理页面  
 if ($_SERVER["REQUEST_METHOD"] == "GET") {  
@@ -114,7 +111,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
     file_put_contents($filePath, implode(PHP_EOL, $updatedContent));  
   
     // 反馈给用户  
-    echo "分数已保存！";  
+    echo "已保存！";  
 } 
 else 
 {  
