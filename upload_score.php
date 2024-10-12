@@ -14,16 +14,17 @@ function updateEloRating($winner, $loser, &$ratings, $K_FACTOR = 32,$INITIAL_RAT
 
     // Calculate new ratings
     $newWinnerRating = $winnerRating + ($winnerRating < 1500 && $loserRating < 1500 ? $eloGain + 10 : $eloGain);
-    $newLoserRating = $loserRating - ($K_FACTOR * $expectedWinner);
+    $newLoserRating = $loserRating - $eloGain;
 
     // Update ratings
     $ratings[$winner] = $newWinnerRating;
     $ratings[$loser] = $newLoserRating;
 
     // Output score changes and current scores
-    echo "Winner: $winner, New Rating: " . floor($newWinnerRating) . ", Change: " . floor($eloGain + ($winnerRating < 1500 && $loserRating < 1500 ? 10 : 0)) . "\n";
-    echo "Loser: $loser, New Rating: " . floor($newLoserRating) . ", Change: " . floor(-($K_FACTOR * $expectedWinner)) . "\n";
+    echo "Winner: $winner, New Rating: " . round($newWinnerRating) . ", Change: " . round($eloGain + ($winnerRating < 1500 && $loserRating < 1500 ? 10 : 0)) . "\n";
+    echo "Loser: $loser, New Rating: " . round($newLoserRating) . ", Change: " . round(-$eloGain) . "\n";
 }  
+
 // 假设这是通过GET请求提交数据的处理页面  
 if ($_SERVER["REQUEST_METHOD"] == "GET") {  
     // 获取玩家名字和分数  
@@ -40,7 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
     //echo $expectedHash;
     if ($hash !== $expectedHash) 
     {  
-        die("Hash验证失败！");  
+        die("Hash verification failed！");  
     }  
         // 检查最近10条记录中是否已存在该记录  
     $recentRecordsFilePath = 'recent_records.txt';  
@@ -56,7 +57,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
     }  
   
     if ($isDuplicate) {  
-        die("上传的数据与最近10条记录重复！");  
+        die("The uploaded data is duplicated with the last 10 records！");  
     }  
   
     // ... 更新或添加两位玩家的分数（保持不变，但注意我们不再直接写入文件） ...  
@@ -83,7 +84,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
         // 更新分数  
         // 假设根据净胜场次调整K因子  
         $netWins = abs($score1 - $score2);  
-        $adjustedKFactor = $K_FACTOR * (1 + $netWins / 4); // 假设每多赢一场，K因子增加20%  斯诺克就是 8倍
+        $adjustedKFactor = $K_FACTOR * (1 + $netWins / 4); // 假设每多赢一场，K因子增加25%  斯诺克就是 8倍
   
         // 使用调整后的K因子来更新评分  
         updateEloRating($winner, $loser, $playersScores, $adjustedKFactor);
@@ -111,7 +112,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
     file_put_contents($filePath, implode(PHP_EOL, $updatedContent));  
   
     // 反馈给用户  
-    echo "已保存！";  
+    echo "Saved！";  
 } 
 else 
 {  
