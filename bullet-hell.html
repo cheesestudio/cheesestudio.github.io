@@ -65,7 +65,10 @@
     // ============ INPUT SYSTEM ============
     const keys = {};
     window.addEventListener('keydown', e => keys[e.key] = true);
-    window.addEventListener('keyup', e => keys[e.key] = false);
+    window.addEventListener('keyup', e => {
+      keys[e.key] = false;
+      if (e.key === 'Escape') keys['Escape_pressed'] = false;
+    });
 
     function isDown(key) {
       return keys[key] || keys[key.toLowerCase()];
@@ -591,7 +594,30 @@
       entranceTime: 0,
       entranceComplete: false,
       entrancePhase: 0,
-      name: ''
+      name: '',
+      // Ability state
+      abilityCooldowns: {
+        teleport: 0,
+        summon: 0,
+        shield: 0,
+        charge: 0,
+        clone: 0,
+        portal: 0,
+        blackHole: 0,
+        whiteHole: 0,
+        laser: 0,
+        phantom: 0
+      },
+      shieldHp: 0,
+      clones: [],
+      portals: [],
+      blackHoleActive: false,
+      whiteHoleActive: false,
+      laserActive: false,
+      laserAngle: 0,
+      phantomTankActive: false,
+      phantomTankX: 0,
+      abilityPhase: 0
     };
 
     // Boss entrance particles
@@ -614,7 +640,8 @@
 
     const BOSS_PATTERNS = [
       'laser', 'ring', 'spiral', 'wave', 'wall', 'scatter', 'beam', 'homing', 'rain',
-      'double_spiral', 'flower', 'cross', 'snake', 'pulse', 'vortex', 'burst', 'helix', 'galaxy', 'chaos'
+      'double_spiral', 'flower', 'cross', 'snake', 'pulse', 'vortex', 'burst', 'helix', 'galaxy', 'chaos',
+      'corridor', 'pincer', 'predict', 'helix_spread'
     ];
     const BOSS_COLORS = [
       '#ff00ff', '#00ff00', '#ff8800', '#00ffff', '#ff4444', '#ffff00',
@@ -624,6 +651,19 @@
       'VOID', 'PULSE', 'CORE', 'NOVA', 'PHANTOM', 'SPECTER',
       'CASCADE', 'VORTEX', 'ECHO', 'STORM', 'DRIFT', 'SURGE'
     ];
+
+    const BOSS_ABILITIES = {
+      TELEPORT: { cooldown: 15, triggerHp: 0.8, name: 'TELEPORT' },
+      SUMMON: { cooldown: 30, triggerHp: 1.0, name: 'SUMMON' },
+      SHIELD: { cooldown: 999, triggerHp: 0.6, name: 'SHIELD' },
+      CHARGE: { cooldown: 20, triggerHp: 0.4, name: 'CHARGE' },
+      CLONE: { cooldown: 25, triggerHp: 0.5, name: 'CLONE' },
+      PORTAL: { cooldown: 45, triggerHp: 1.0, name: 'PORTAL' },
+      BLACK_HOLE: { cooldown: 30, triggerHp: 0.3, name: 'BLACK_HOLE' },
+      WHITE_HOLE: { cooldown: 25, triggerHp: 0.35, name: 'WHITE_HOLE' },
+      LASER: { cooldown: 20, triggerHp: 0.25, name: 'LASER' },
+      PHANTOM: { cooldown: 15, triggerHp: 0.2, name: 'PHANTOM' }
+    };
 
     let bossIndex = 0;
     let waveCount = 1;
@@ -1281,6 +1321,87 @@
             r: 3 + Math.random() * 4,
             owner: 'boss',
             color: Math.random() > 0.5 ? boss.color : '#ffffff'
+          });
+        }
+      }
+      else if (p === 'corridor') {
+        const gapX = player.x; // Gap follows player
+        for (let i = 0; i < 12; i++) {
+          const bx = (i / 12) * canvas.width;
+          // Skip bullets near player position (create corridor)
+          if (Math.abs(bx - gapX) > 80) {
+            bullets.push({
+              x: bx,
+              y: boss.y + 20,
+              vx: 0,
+              vy: 120,
+              r: 5,
+              owner: 'boss',
+              color: boss.color
+            });
+          }
+        }
+      }
+      else if (p === 'pincer') {
+        // Left side bullets
+        for (let i = 0; i < 5; i++) {
+          bullets.push({
+            x: -20,
+            y: boss.y + i * 30 + 20,
+            vx: 150,
+            vy: 30,
+            r: 5,
+            owner: 'boss',
+            color: '#ff00ff'
+          });
+        }
+        // Right side bullets
+        for (let i = 0; i < 5; i++) {
+          bullets.push({
+            x: canvas.width + 20,
+            y: boss.y + i * 30 + 20,
+            vx: -150,
+            vy: 30,
+            r: 5,
+            owner: 'boss',
+            color: '#00ffff'
+          });
+        }
+      }
+      else if (p === 'predict') {
+        // Calculate player's predicted position
+        const dx = player.x - boss.x;
+        const dy = player.y - boss.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        // Lead by 0.3 seconds
+        const leadTime = 0.3;
+        const predictX = player.x + (dx / dist) * 100 * leadTime;
+        const predictY = player.y + (dy / dist) * 100 * leadTime;
+
+        bullets.push({
+          x: boss.x,
+          y: boss.y,
+          vx: (predictX - boss.x) * 2,
+          vy: (predictY - boss.y) * 2,
+          r: 6,
+          owner: 'boss',
+          color: '#ffff00'
+        });
+      }
+      else if (p === 'helix_spread') {
+        const angle = Date.now() / 200;
+        const colors = ['#ff00ff', '#00ffff', '#ffff00'];
+        for (let j = 0; j < 3; j++) {
+          const a = angle + j * Math.PI * 2 / 3;
+          const speed = 50 + j * 20;
+          bullets.push({
+            x: boss.x,
+            y: boss.y,
+            vx: Math.cos(a) * speed,
+            vy: Math.sin(a) * speed + 40,
+            r: 4 + j,
+            owner: 'boss',
+            color: colors[j]
           });
         }
       }
