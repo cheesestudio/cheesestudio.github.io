@@ -143,10 +143,15 @@
     function applyPowerup(type) {
       if (type.name === 'POWER' && player.power < player.maxPower) {
         player.power++;
+        spawnSparkle(player.x, player.y, '#ff0000');
+        triggerScreenFlash(0.3, '#ff0000');
       } else if (type.name === 'SCORE') {
         score += 500;
+        spawnSparkle(player.x, player.y, '#ffff00');
       } else if (type.name === 'BOMB') {
         player.lives = Math.min(player.lives + 1, 5);
+        spawnSparkle(player.x, player.y, '#00ff00');
+        triggerScreenFlash(0.3, '#00ff00');
       }
     }
 
@@ -322,6 +327,7 @@
     const bullets = [];
 
     function shootBullet(x, y, vy, owner, type = 'normal') {
+      const color = owner === 'player' ? (player.power >= 2 ? '#00ffff' : '#00aaff') : '#ff4444';
       bullets.push({
         x, y,
         vx: 0,
@@ -329,8 +335,10 @@
         r: 4,
         owner,
         type,
-        color: owner === 'player' ? '#00ffff' : '#ff4444'
+        color
       });
+      // Add bullet trail
+      addBulletTrail({ x, y, color, r: 4 });
     }
 
     function updateBullets(dt) {
@@ -338,6 +346,11 @@
         const b = bullets[i];
         b.x += b.vx * dt;
         b.y += b.vy * dt;
+
+        // Add trail occasionally
+        if (Math.random() < 0.3) {
+          addBulletTrail({ x: b.x, y: b.y, color: b.color, r: b.r });
+        }
 
         // Off-screen cleanup
         if (b.y < -20 || b.y > canvas.height + 20 ||
@@ -457,8 +470,13 @@
       pattern: 0,
       active: false,
       entranceTime: 0,
-      entranceComplete: false
+      entranceComplete: false,
+      entrancePhase: 0,
+      name: ''
     };
+
+    // Boss entrance particles
+    const entranceParticles = [];
 
     const BOSS_PHASES = [
       // VOID - Phase 1
@@ -483,6 +501,10 @@
       '#ff00ff', '#00ff00', '#ff8800', '#00ffff', '#ff4444', '#ffff00',
       '#ff0066', '#66ff00', '#8800ff', '#ff6600', '#00ff66', '#6600ff'
     ];
+    const BOSS_NAMES = [
+      'VOID', 'PULSE', 'CORE', 'NOVA', 'PHANTOM', 'SPECTER',
+      'CASCADE', 'VORTEX', 'ECHO', 'STORM', 'DRIFT', 'SURGE'
+    ];
 
     let bossIndex = 0;
     let waveCount = 1;
@@ -503,23 +525,96 @@
       boss.y = -50;
       boss.entranceTime = 0;
       boss.entranceComplete = false;
+      boss.entrancePhase = 0;
+      boss.entranceType = boss.pattern;
+      boss.scale = 0;
+      boss.rotation = 0;
+      boss.targetX = canvas.width / 2;
+      boss.name = BOSS_NAMES[bossIndex % BOSS_NAMES.length];
+
+      // Warning screen effect
+      triggerScreenShake(3, 0.5);
     }
 
     function updateBoss(dt) {
       if (!boss.active) return;
 
-      // Boss entrance animation
+      // Boss entrance animation - pattern specific
       if (!boss.entranceComplete) {
         boss.entranceTime += dt;
         const targetY = 80;
-        const progress = Math.min(boss.entranceTime / 1.5, 1);
-        // Easing: ease-out back
-        const ease = 1 - Math.pow(1 - progress, 3);
-        boss.y = -50 + (targetY + 50) * ease;
+        const t = boss.entranceTime;
 
-        if (progress >= 1) {
+        const p = boss.entranceType;
+
+        // Different animations based on pattern
+        if (p === 'laser' || p === 'beam' || p === 'cross') {
+          // Slide down fast
+          const progress = Math.min(t / 0.8, 1);
+          boss.y = -60 + (targetY + 60) * (1 - Math.pow(1 - progress, 2));
+          boss.scale = progress;
+        }
+        else if (p === 'spiral' || p === 'double_spiral' || p === 'helix') {
+          // Spiral down
+          boss.y = -60 + (targetY + 60) * Math.min(t / 1.5, 1);
+          boss.rotation = t * 3;
+          boss.scale = Math.min(t * 2, 1);
+        }
+        else if (p === 'ring' || p === 'flower' || p === 'galaxy') {
+          // Expand from center
+          const progress = Math.min(t / 1.2, 1);
+          boss.y = targetY;
+          boss.scale = progress * 1.2;
+          boss.x = boss.targetX + Math.sin(t * 5) * 50 * (1 - progress);
+        }
+        else if (p === 'rain' || p === 'chaos') {
+          // Fast drop
+          const progress = Math.min(t / 0.5, 1);
+          boss.y = -80 + (targetY + 80) * progress;
+          boss.scale = 1 + Math.sin(progress * Math.PI) * 0.3;
+        }
+        else if (p === 'wave' || p === 'pulse') {
+          // Bounce down
+          const progress = Math.min(t / 1.5, 1);
+          const bounce = Math.sin(progress * Math.PI * 2) * 20 * (1 - progress);
+          boss.y = -50 + (targetY + 50) * progress + bounce;
+          boss.scale = progress;
+        }
+        else if (p === 'vortex' || p === 'burst') {
+          // Spin in
+          const progress = Math.min(t / 1.0, 1);
+          boss.y = -30 + (targetY + 30) * progress;
+          boss.rotation = progress * Math.PI * 2;
+          boss.scale = progress;
+        }
+        else if (p === 'snake' || p === 'homing') {
+          // Zigzag approach
+          const progress = Math.min(t / 1.8, 1);
+          boss.y = -60 + (targetY + 60) * progress;
+          boss.x = boss.targetX + Math.sin(progress * Math.PI * 4) * 100 * (1 - progress);
+          boss.scale = progress;
+        }
+        else if (p === 'wall' || p === 'scatter') {
+          // Slow descend with sway
+          const progress = Math.min(t / 2.0, 1);
+          boss.y = -40 + (targetY + 40) * (1 - Math.pow(1 - progress, 0.5));
+          boss.x = boss.targetX + Math.sin(progress * Math.PI * 2) * 30;
+          boss.scale = 0.5 + progress * 0.5;
+        }
+        else {
+          // Default
+          const progress = Math.min(t / 1.5, 1);
+          const ease = 1 - Math.pow(1 - progress, 3);
+          boss.y = -50 + (targetY + 50) * ease;
+          boss.scale = progress;
+        }
+
+        if (boss.entranceTime >= 1.5 || (p === 'rain' && boss.entranceTime >= 0.5)) {
           boss.entranceComplete = true;
           boss.y = targetY;
+          boss.scale = 1;
+          boss.rotation = 0;
+          boss.x = boss.targetX;
         }
         return; // Don't fire during entrance
       }
@@ -538,8 +633,56 @@
     function renderBoss() {
       if (!boss.active) return;
 
+      // Render entrance particles first
+      for (const p of entranceParticles) {
+        ctx.save();
+        ctx.globalAlpha = p.life * 2;
+        ctx.fillStyle = p.color;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Show boss name during entrance
+      if (!boss.entranceComplete && boss.name) {
+        ctx.save();
+        const time = Date.now() / 1000;
+        const nameY = 40 + Math.sin(time * 5) * 5;
+        ctx.fillStyle = boss.color;
+        ctx.font = 'bold 18px monospace';
+        ctx.textAlign = 'center';
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = boss.color;
+        ctx.globalAlpha = Math.min(1, boss.entranceTime * 2);
+        ctx.fillText(boss.name, boss.x, nameY);
+        ctx.font = '12px monospace';
+        ctx.globalAlpha = Math.min(1, boss.entranceTime * 2) * 0.7;
+        ctx.fillText(`WAVE ${waveCount}`, boss.x, nameY + 18);
+        ctx.restore();
+      }
+
       ctx.save();
       ctx.translate(boss.x, boss.y);
+
+      // Entrance scale effect
+      const entranceScale = boss.scale || 1;
+      ctx.scale(entranceScale, entranceScale);
+
+      // Flash effect during entrance
+      if (!boss.entranceComplete) {
+        ctx.globalAlpha = 0.5 + Math.sin(Date.now() / 50) * 0.5;
+      }
+
+      // 3D rotation for certain patterns
+      if (boss.entranceComplete) {
+        const is3D = ['spiral', 'double_spiral', 'helix', 'vortex', 'galaxy', 'ring', 'flower'].includes(boss.pattern);
+        if (is3D) {
+          ctx.rotate(Math.sin(Date.now() / 2000) * 0.2);
+        }
+      }
 
       // Outer glow
       const glowGradient = ctx.createRadialGradient(0, 0, boss.r * 0.5, 0, 0, boss.r * 1.5);
@@ -602,6 +745,15 @@
       ctx.beginPath();
       ctx.ellipse(0, 0, boss.r * 0.4, boss.r * 1.2, ringAngle, 0, Math.PI * 2);
       ctx.stroke();
+
+      // Extra 3D ring
+      if (['galaxy', 'flower', 'ring', 'vortex'].includes(boss.pattern)) {
+        ctx.beginPath();
+        ctx.ellipse(0, 0, boss.r * 1.4, boss.r * 0.5, ringAngle * 1.5, 0, Math.PI * 2);
+        ctx.globalAlpha = 0.25;
+        ctx.stroke();
+      }
+
       ctx.globalAlpha = 1;
 
       ctx.restore();
@@ -1025,6 +1177,7 @@
           if (boss.hp <= 0) {
             spawnExplosion(boss.x, boss.y, boss.color, 50);
             triggerScreenShake(6, 0.15);
+            triggerScreenFlash(0.8, boss.color);
             // Spawn powerups
             for (let i = 0; i < 3; i++) {
               spawnPowerup(boss.x + (Math.random() - 0.5) * 60, boss.y + (Math.random() - 0.5) * 40);
@@ -1099,6 +1252,7 @@
     // ============ PARTICLES + BACKGROUND ============
     const particles = [];
     const stars = [];
+    const ambientParticles = [];
     for (let i = 0; i < 80; i++) {
       stars.push({
         x: Math.random() * canvas.width,
@@ -1161,6 +1315,118 @@
         ctx.shadowBlur = 0;
       }
     }
+
+    // ============ VIGNETTE EFFECT ============
+    function renderVignette() {
+      const gradient = ctx.createRadialGradient(
+        canvas.width / 2, canvas.height / 2, canvas.height * 0.3,
+        canvas.width / 2, canvas.height / 2, canvas.height * 0.9
+      );
+      gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+      gradient.addColorStop(1, 'rgba(0, 0, 0, 0.6)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // ============ SCREEN FLASH ============
+    let screenFlash = { intensity: 0, color: '#fff' };
+
+    function triggerScreenFlash(intensity, color = '#fff') {
+      screenFlash.intensity = intensity;
+      screenFlash.color = color;
+    }
+
+    function updateScreenFlash(dt) {
+      if (screenFlash.intensity > 0) {
+        screenFlash.intensity -= dt * 3;
+        if (screenFlash.intensity < 0) screenFlash.intensity = 0;
+      }
+    }
+
+    function renderScreenFlash() {
+      if (screenFlash.intensity > 0) {
+        ctx.fillStyle = screenFlash.color;
+        ctx.globalAlpha = screenFlash.intensity * 0.3;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    // ============ SPARKLE PARTICLES ============
+    const sparkles = [];
+
+    function spawnSparkle(x, y, color) {
+      for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2;
+        sparkles.push({
+          x, y,
+          vx: Math.cos(angle) * (50 + Math.random() * 50),
+          vy: Math.sin(angle) * (50 + Math.random() * 50),
+          life: 0.5 + Math.random() * 0.3,
+          color,
+          size: 2 + Math.random() * 2
+        });
+      }
+    }
+
+    function updateSparkles(dt) {
+      for (let i = sparkles.length - 1; i >= 0; i--) {
+        const s = sparkles[i];
+        s.x += s.vx * dt;
+        s.y += s.vy * dt;
+        s.life -= dt;
+        if (s.life <= 0) sparkles.splice(i, 1);
+      }
+    }
+
+    function renderSparkles() {
+      for (const s of sparkles) {
+        ctx.save();
+        ctx.globalAlpha = s.life * 2;
+        ctx.fillStyle = s.color;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = s.color;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size * s.life * 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    // ============ BULLET TRAILS ============
+    const bulletTrails = [];
+
+    function addBulletTrail(bullet) {
+      bulletTrails.push({
+        x: bullet.x,
+        y: bullet.y,
+        color: bullet.color,
+        life: 0.3,
+        size: bullet.r
+      });
+    }
+
+    function updateBulletTrails(dt) {
+      for (let i = bulletTrails.length - 1; i >= 0; i--) {
+        bulletTrails[i].life -= dt;
+        if (bulletTrails[i].life <= 0) bulletTrails.splice(i, 1);
+      }
+    }
+
+    function renderBulletTrails() {
+      for (const t of bulletTrails) {
+        ctx.save();
+        ctx.globalAlpha = t.life * 3;
+        ctx.fillStyle = t.color;
+        ctx.beginPath();
+        ctx.arc(t.x, t.y, t.size * 0.8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    // ============ BACKGROUND PULSE ============
+    let bgPulse = 0;
 
     function spawnParticle(x, y, color) {
       for (let i = 0; i < 5; i++) {
@@ -1657,7 +1923,9 @@
     // ============ GAME UPDATE/RENDER ============
     function update(dt) {
       gameTime += dt;
+      bgPulse += dt * 2;
       updateScreenShake(dt);
+      updateScreenFlash(dt);
       updatePlayer(dt);
       updateBullets(dt);
       updatePowerups(dt);
@@ -1665,6 +1933,8 @@
       updateBoss(dt);
       updateMeteors(dt);
       updateParticles(dt);
+      updateSparkles(dt);
+      updateBulletTrails(dt);
       updateExplosionParticles(dt);
       updateDisplayHp(dt);
       updateScorePopups(dt);
@@ -1682,6 +1952,8 @@
       ctx.fillRect(-10, -10, canvas.width + 20, canvas.height + 20);
       renderBackground();
       renderMeteors();
+      renderBulletTrails();
+      renderSparkles();
 
       switch(gameState) {
         case STATE.MENU:
@@ -1698,6 +1970,8 @@
           renderPlayer();
           renderUI();
           renderCombo();
+          renderScreenFlash();
+          renderVignette();
           break;
         case STATE.GAMEOVER:
           renderExplosionParticles();
@@ -1708,11 +1982,14 @@
         case STATE.PAUSED:
           renderBackground();
           renderMeteors();
+          renderBulletTrails();
+          renderSparkles();
           renderParticles();
           renderBullets();
           if (boss.active) renderBoss();
           renderPlayer();
           renderUI();
+          renderVignette();
           renderCombo();
           renderPauseScreen();
           break;
