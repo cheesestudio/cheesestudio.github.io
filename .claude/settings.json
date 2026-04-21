@@ -7,7 +7,10 @@
       "Bash(curl -s \"https://api.github.com/repos/Yeachan-Heo/oh-my-claudecode/contents/skills\")",
       "Bash(curl -s *)",
       "mcp__UnityMCP__read_console",
-      "Edit(~/.claude/skills/omc-teams/**)"
+      "Edit(~/.claude/skills/omc-teams/**)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'Fix audit issues: clamped dt, safe timers, bullet limit *)",
+      "Bash(git push *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\21900\\.claude\\skills",
