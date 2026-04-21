@@ -314,6 +314,28 @@
     }
 
     function updatePlayer(dt) {
+      // Apply black hole gravity
+      if (boss.blackHoleActive) {
+        const dx = boss.x - player.x;
+        const dy = boss.y - player.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist > 20) {
+          player.x += (dx / dist) * 100 * dt;
+          player.y += (dy / dist) * 100 * dt;
+        }
+      }
+
+      // Apply white hole repulsion
+      if (boss.whiteHoleActive) {
+        const dx = player.x - boss.x;
+        const dy = player.y - boss.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 300) {
+          player.x += (dx / dist) * 150 * dt;
+          player.y += (dy / dist) * 150 * dt;
+        }
+      }
+
       // Movement
       if (isDown('ArrowLeft') || isDown('a')) player.x -= player.speed * dt;
       if (isDown('ArrowRight') || isDown('d')) player.x += player.speed * dt;
@@ -487,6 +509,23 @@
         b.x += b.vx * dt;
         b.y += b.vy * dt;
 
+        // Portal teleportation
+        if (boss.portals.length > 0) {
+          for (const portal of boss.portals) {
+            if (portal.active) {
+              const otherPortal = boss.portals.find(p => p !== portal);
+              if (otherPortal && otherPortal.active) {
+                const dx = b.x - portal.x;
+                const dy = b.y - portal.y;
+                if (Math.sqrt(dx*dx + dy*dy) < 30) {
+                  b.x = otherPortal.x + (Math.random() - 0.5) * 20;
+                  b.y = otherPortal.y + (Math.random() - 0.5) * 20;
+                }
+              }
+            }
+          }
+        }
+
         // Add trail occasionally
         if (Math.random() < 0.3) {
           addBulletTrail({ x: b.x, y: b.y, color: b.color, r: b.r });
@@ -561,8 +600,30 @@
       return dist < (a.r + b.r);
     }
 
+    function playerHit() {
+      player.lives--;
+      player.invincible = 2;
+      spawnExplosion(player.x, player.y, '#ffffff', 20);
+      triggerScreenShake(4, 0.1);
+
+      if (player.lives <= 0) {
+        gameState = STATE.GAMEOVER;
+        spawnExplosion(player.x, player.y, '#00ffff', 80);
+      }
+    }
+
     function checkPlayerHit() {
       if (player.invincible > 0) return;
+
+      // Laser damage
+      if (boss.laserActive) {
+        const dx = player.x - boss.x;
+        const dy = player.y - boss.y;
+        const playerDist = Math.sqrt(dx*dx + dy*dy);
+        if (playerDist < 400) {
+          playerHit();
+        }
+      }
 
       for (let i = bullets.length - 1; i >= 0; i--) {
         const b = bullets[i];
@@ -580,15 +641,7 @@
 
           if (circleCollision(player, b)) {
             bullets.splice(i, 1);
-            player.lives--;
-            player.invincible = 2;
-            spawnExplosion(player.x, player.y, '#ffffff', 20);
-            triggerScreenShake(4, 0.1);
-
-            if (player.lives <= 0) {
-              gameState = STATE.GAMEOVER;
-              spawnExplosion(player.x, player.y, '#00ffff', 80);
-            }
+            playerHit();
             return;
           }
         }
@@ -796,6 +849,28 @@
         return; // Don't fire during entrance
       }
 
+      // Charge attack handling
+      if (boss.charging) {
+        boss.chargeTime += dt;
+        if (boss.chargeTime >= 3) {
+          for (let i = 0; i < 20; i++) {
+            const angle = (i / 20) * Math.PI * 2;
+            bullets.push({
+              x: boss.x,
+              y: boss.y,
+              vx: Math.cos(angle) * 200,
+              vy: Math.sin(angle) * 200,
+              r: 8,
+              owner: 'boss',
+              color: '#ff0000'
+            });
+          }
+          boss.charging = false;
+          triggerScreenShake(8, 0.3);
+        }
+        return;
+      }
+
       // Pattern-linked movement
       const pattern = boss.pattern;
       if (pattern === 'spiral' || pattern === 'helix' || pattern === 'double_spiral') {
@@ -865,9 +940,10 @@
         boss.abilityCooldowns.summon = 30;
       }
 
-      // 3. SHIELD - HP < 60%
-      if (hpPercent < 0.6 && boss.shieldHp <= 0 && availableAbilities >= 3) {
+      // 3. SHIELD - HP < 60% (只触发一次)
+      if (hpPercent < 0.6 && boss.shieldHp <= 0 && availableAbilities >= 3 && !boss.shieldUsed) {
         triggerShield();
+        boss.shieldUsed = true;
       }
 
       // 4. CHARGE - HP < 40%
@@ -937,7 +1013,7 @@
     }
 
     function triggerShield() {
-      boss.shieldHp = boss.maxHp * 0.3;
+      boss.shieldHp = boss.maxHp * 0.1; // 易碎的护盾,约3发可打破
     }
 
     function triggerChargeAttack() {
@@ -1243,6 +1319,145 @@
 
       ctx.globalAlpha = 1;
       ctx.restore();
+    }
+
+    function renderBossAbilities() {
+      if (!boss.active) return;
+
+      // Shield
+      if (boss.shieldHp > 0) {
+        ctx.save();
+        ctx.translate(boss.x, boss.y);
+        ctx.strokeStyle = boss.color;
+        ctx.lineWidth = 3;
+        ctx.globalAlpha = 0.6 + Math.sin(Date.now() / 100) * 0.2;
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const angle = (i / 6) * Math.PI * 2 + Date.now() / 500;
+          const px = Math.cos(angle) * (boss.r + 20);
+          const py = Math.sin(angle) * (boss.r + 20);
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Clones
+      for (const clone of boss.clones) {
+        ctx.save();
+        ctx.globalAlpha = clone.alpha;
+        ctx.translate(clone.x + Math.sin(Date.now() / 200 + clone.offset) * 5, clone.y);
+        ctx.scale(0.8, 0.8);
+        ctx.fillStyle = boss.color;
+        ctx.beginPath();
+        ctx.arc(0, 0, boss.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Portals
+      for (const portal of boss.portals) {
+        if (portal.active) {
+          ctx.save();
+          ctx.translate(portal.x, portal.y);
+          const gradient = ctx.createRadialGradient(0, 0, 5, 0, 0, 40);
+          gradient.addColorStop(0, '#000000');
+          gradient.addColorStop(0.5, '#4400ff');
+          gradient.addColorStop(1, 'transparent');
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(0, 0, 40, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.rotate(Date.now() / 200);
+          ctx.strokeStyle = '#8800ff';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(0, 0, 30, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      // Black Hole
+      if (boss.blackHoleActive) {
+        ctx.save();
+        ctx.translate(boss.x, boss.y);
+        const gradient = ctx.createRadialGradient(0, 0, 5, 0, 0, 60);
+        gradient.addColorStop(0, '#000000');
+        gradient.addColorStop(0.3, '#220044');
+        gradient.addColorStop(1, 'transparent');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(0, 0, 60, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#4400ff';
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 3; i++) {
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 40 + i * 10, 15, Date.now() / 500 + i, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      // White Hole
+      if (boss.whiteHoleActive) {
+        ctx.save();
+        ctx.translate(boss.x, boss.y);
+        const gradient = ctx.createRadialGradient(0, 0, 5, 0, 0, 80);
+        gradient.addColorStop(0, '#ffffff');
+        gradient.addColorStop(0.3, '#ffff00');
+        gradient.addColorStop(1, 'transparent');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(0, 0, 80, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Laser Beam
+      if (boss.laserActive) {
+        ctx.save();
+        ctx.translate(boss.x, boss.y);
+        boss.laserAngle = Math.atan2(player.y - boss.y, player.x - boss.x);
+        ctx.rotate(boss.laserAngle);
+        ctx.fillStyle = '#ff0000';
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#ff0000';
+        ctx.fillRect(0, -4, canvas.width, 8);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, -2, canvas.width, 4);
+        ctx.restore();
+      }
+
+      // Phantom Tank
+      if (boss.phantomTankActive && boss.phantomTankVisible) {
+        ctx.save();
+        ctx.translate(boss.phantomTankX, 100);
+        ctx.fillStyle = '#444444';
+        ctx.fillRect(-15, -10, 30, 20);
+        ctx.fillStyle = '#ff0000';
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#ff0000';
+        ctx.beginPath();
+        ctx.arc(boss.phantomTankX < canvas.width / 2 ? 15 : -15, 0, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Charge warning
+      if (boss.charging) {
+        ctx.save();
+        ctx.fillStyle = '#ff0000';
+        ctx.font = 'bold 24px monospace';
+        ctx.textAlign = 'center';
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#ff0000';
+        ctx.fillText('WARNING!', canvas.width / 2, canvas.height / 2);
+        ctx.restore();
+      }
     }
 
     function fireBossPattern() {
@@ -1730,6 +1945,23 @@
 
     function checkBossHit() {
       if (!boss.active) return;
+
+      // Shield blocks damage
+      if (boss.shieldHp > 0) {
+        for (let i = bullets.length - 1; i >= 0; i--) {
+          const b = bullets[i];
+          if (b.owner === 'player' && circleCollision(b, { x: boss.x, y: boss.y, r: boss.r + 25 })) {
+            bullets.splice(i, 1);
+            boss.shieldHp -= 5;
+            spawnSparkle(b.x, b.y, boss.color);
+            if (boss.shieldHp <= 0) {
+              spawnExplosion(boss.x, boss.y, boss.color, 30);
+              triggerScreenShake(3, 0.2);
+            }
+            return;
+          }
+        }
+      }
 
       for (let i = bullets.length - 1; i >= 0; i--) {
         const b = bullets[i];
@@ -2709,7 +2941,10 @@
           renderBullets();
           renderPowerups();
           renderMinions();
-          if (boss.active) renderBoss();
+          if (boss.active) {
+            renderBoss();
+            renderBossAbilities();
+          }
           renderPlayer();
           renderUI();
           renderCombo();
