@@ -22,7 +22,7 @@
   </style>
 </head>
 <body>
-  <canvas id="game" width="800" height="600"></canvas>
+  <canvas id="game" width="1024" height="768"></canvas>
   <script>
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
@@ -92,9 +92,12 @@
     // ============ POWER-UPS ============
     const powerups = [];
     const POWERUP_TYPES = [
-      { name: 'POWER', color: '#ff0000', symbol: 'P' },
-      { name: 'SCORE', color: '#ffff00', symbol: 'S' },
-      { name: 'BOMB', color: '#00ff00', symbol: 'B' }
+      { name: 'POWER', color: '#ff0066', symbol: 'P', glow: '#ff0066' },
+      { name: 'SCORE', color: '#ffcc00', symbol: 'S', glow: '#ffcc00' },
+      { name: 'BOMB', color: '#00ff66', symbol: 'B', glow: '#00ff66' },
+      { name: 'LIFE', color: '#ff4444', symbol: '❤', glow: '#ff6666' },
+      { name: 'SHIELD', color: '#00ccff', symbol: '◈', glow: '#00ccff' },
+      { name: 'RAPID', color: '#ff6600', symbol: '⚡', glow: '#ff8800' }
     ];
 
     function spawnPowerup(x, y) {
@@ -156,19 +159,123 @@
     }
 
     function renderPowerups() {
+      const time = Date.now() / 1000;
+
       for (const p of powerups) {
         ctx.save();
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = p.type.color;
-        ctx.fillStyle = p.type.color;
+
+        // Pulsing glow effect
+        const pulse = 1 + Math.sin(time * 6 + p.x) * 0.2;
+        const glowSize = p.r * 2.5 * pulse;
+
+        // Outer glow
+        const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowSize);
+        gradient.addColorStop(0, p.type.glow + 'aa');
+        gradient.addColorStop(0.5, p.type.glow + '44');
+        gradient.addColorStop(1, 'transparent');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(p.x - glowSize, p.y - glowSize, glowSize * 2, glowSize * 2);
+
+        // Rotating ring
+        ctx.strokeStyle = p.type.color;
+        ctx.lineWidth = 2;
+        ctx.globalAlpha = 0.6;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        const ringAngle = time * 3 + p.y * 0.1;
+        ctx.ellipse(p.x, p.y, p.r * 1.5, p.r * 0.8, ringAngle, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.globalAlpha = 1;
+
+        // Main shape based on type
+        ctx.fillStyle = p.type.color;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = p.type.glow;
+
+        if (p.type.name === 'POWER') {
+          // Diamond shape
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y - p.r);
+          ctx.lineTo(p.x + p.r, p.y);
+          ctx.lineTo(p.x, p.y + p.r);
+          ctx.lineTo(p.x - p.r, p.y);
+          ctx.closePath();
+          ctx.fill();
+        } else if (p.type.name === 'SCORE') {
+          // Star shape
+          ctx.beginPath();
+          for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2 - Math.PI / 2;
+            const len = i % 2 === 0 ? p.r : p.r * 0.5;
+            const px = p.x + Math.cos(angle) * len;
+            const py = p.y + Math.sin(angle) * len;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.fill();
+        } else if (p.type.name === 'BOMB') {
+          // Hexagon
+          ctx.beginPath();
+          for (let i = 0; i < 6; i++) {
+            const angle = (i / 6) * Math.PI * 2 - Math.PI / 2;
+            const px = p.x + Math.cos(angle) * p.r;
+            const py = p.y + Math.sin(angle) * p.r;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.fill();
+        } else if (p.type.name === 'LIFE') {
+          // Heart-like
+          ctx.beginPath();
+          ctx.arc(p.x - 3, p.y - 2, 3, Math.PI, 0);
+          ctx.arc(p.x + 3, p.y - 2, 3, Math.PI, 0);
+          ctx.lineTo(p.x, p.y + 4);
+          ctx.closePath();
+          ctx.fill();
+        } else if (p.type.name === 'SHIELD') {
+          // Diamond with inner circle
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y - p.r);
+          ctx.lineTo(p.x + p.r, p.y);
+          ctx.lineTo(p.x, p.y + p.r);
+          ctx.lineTo(p.x - p.r, p.y);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = '#000';
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r * 0.4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#fff';
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r * 0.25, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (p.type.name === 'RAPID') {
+          // Lightning bolt shape
+          ctx.beginPath();
+          ctx.moveTo(p.x + 2, p.y - p.r);
+          ctx.lineTo(p.x - 3, p.y);
+          ctx.lineTo(p.x + 1, p.y);
+          ctx.lineTo(p.x - 2, p.y + p.r);
+          ctx.lineTo(p.x + 3, p.y);
+          ctx.lineTo(p.x - 1, p.y);
+          ctx.closePath();
+          ctx.fill();
+        } else {
+          // Default circle
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Inner highlight
+        ctx.fillStyle = '#fff';
+        ctx.globalAlpha = 0.5;
+        ctx.beginPath();
+        ctx.arc(p.x - 2, p.y - 2, p.r * 0.3, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = '#000';
-        ctx.font = 'bold 10px monospace';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(p.type.symbol, p.x, p.y);
+
         ctx.restore();
       }
     }
@@ -633,23 +740,11 @@
     function renderBoss() {
       if (!boss.active) return;
 
-      // Render entrance particles first
-      for (const p of entranceParticles) {
-        ctx.save();
-        ctx.globalAlpha = p.life * 2;
-        ctx.fillStyle = p.color;
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
+      const time = Date.now() / 1000;
 
       // Show boss name during entrance
       if (!boss.entranceComplete && boss.name) {
         ctx.save();
-        const time = Date.now() / 1000;
         const nameY = 40 + Math.sin(time * 5) * 5;
         ctx.fillStyle = boss.color;
         ctx.font = 'bold 18px monospace';
@@ -667,95 +762,221 @@
       ctx.save();
       ctx.translate(boss.x, boss.y);
 
-      // Entrance scale effect
       const entranceScale = boss.scale || 1;
       ctx.scale(entranceScale, entranceScale);
 
-      // Flash effect during entrance
-      if (!boss.entranceComplete) {
-        ctx.globalAlpha = 0.5 + Math.sin(Date.now() / 50) * 0.5;
-      }
-
-      // 3D rotation for certain patterns
+      // Dynamic rotation based on pattern
       if (boss.entranceComplete) {
-        const is3D = ['spiral', 'double_spiral', 'helix', 'vortex', 'galaxy', 'ring', 'flower'].includes(boss.pattern);
-        if (is3D) {
-          ctx.rotate(Math.sin(Date.now() / 2000) * 0.2);
+        const rotationSpeed = {
+          'spiral': 0.3, 'double_spiral': 0.4, 'helix': 0.35, 'vortex': 0.5,
+          'galaxy': 0.2, 'ring': 0.15, 'flower': 0.25, 'pulse': 0.1,
+          'burst': 0.6, 'wave': 0.08, 'snake': 0.05, 'homing': 0.12,
+          'laser': 0, 'beam': 0, 'cross': 0, 'rain': 0, 'chaos': 0.15, 'wall': 0, 'scatter': 0
+        };
+        const rotSpeed = rotationSpeed[boss.pattern] || 0;
+        if (rotSpeed > 0) {
+          ctx.rotate(time * rotSpeed);
         }
       }
 
-      // Outer glow
-      const glowGradient = ctx.createRadialGradient(0, 0, boss.r * 0.5, 0, 0, boss.r * 1.5);
-      glowGradient.addColorStop(0, boss.color);
-      glowGradient.addColorStop(0.5, boss.color + '44');
-      glowGradient.addColorStop(1, 'transparent');
-      ctx.fillStyle = glowGradient;
+      // === LAYER 1: Outer energy field ===
+      const energyField = ctx.createRadialGradient(0, 0, boss.r * 0.3, 0, 0, boss.r * 2);
+      energyField.addColorStop(0, boss.color + '22');
+      energyField.addColorStop(0.5, boss.color + '11');
+      energyField.addColorStop(1, 'transparent');
+      ctx.fillStyle = energyField;
       ctx.beginPath();
-      ctx.arc(0, 0, boss.r * 1.5, 0, Math.PI * 2);
+      ctx.arc(0, 0, boss.r * 2, 0, Math.PI * 2);
       ctx.fill();
 
-      // Main shape with inner detail
-      ctx.shadowBlur = 25;
+      // Pulsing outer ring
+      const pulse = Math.sin(time * 3) * 0.1 + 1;
+      ctx.strokeStyle = boss.color;
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.arc(0, 0, boss.r * 1.8 * pulse, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // === LAYER 2: Main body (pattern-specific shape) ===
+      ctx.shadowBlur = 30;
       ctx.shadowColor = boss.color;
       ctx.fillStyle = boss.color;
       ctx.beginPath();
-      const sides = 3 + boss.phase;
-      for (let i = 0; i < sides; i++) {
-        const angle = (i / sides) * Math.PI * 2 - Math.PI / 2;
-        const px = Math.cos(angle) * boss.r;
-        const py = Math.sin(angle) * boss.r;
-        if (i === 0) ctx.moveTo(px, py);
-        else ctx.lineTo(px, py);
+
+      const drawPattern = boss.pattern;
+      if (drawPattern === 'spiral' || drawPattern === 'double_spiral' || drawPattern === 'helix') {
+        // Spiral arm shape
+        for (let i = 0; i < 5; i++) {
+          const angle = (i / 5) * Math.PI * 2 + time * 0.5;
+          const len = boss.r * (0.8 + Math.sin(time * 2 + i) * 0.2);
+          ctx.lineTo(Math.cos(angle) * len, Math.sin(angle) * len);
+        }
+        ctx.closePath();
+      } else if (drawPattern === 'galaxy' || drawPattern === 'ring' || drawPattern === 'flower') {
+        // Multi-layered circle with orbiting nodes
+        ctx.arc(0, 0, boss.r * 0.8, 0, Math.PI * 2);
+        ctx.closePath();
+        // Orbiting nodes
+        for (let i = 0; i < 6; i++) {
+          const angle = (i / 6) * Math.PI * 2 + time;
+          const nodeX = Math.cos(angle) * boss.r * 0.5;
+          const nodeY = Math.sin(angle) * boss.r * 0.5;
+          ctx.moveTo(nodeX + 5, nodeY);
+          ctx.arc(nodeX, nodeY, 5, 0, Math.PI * 2);
+        }
+      } else if (drawPattern === 'vortex' || drawPattern === 'burst') {
+        // Vortex/spiral inward shape
+        for (let i = 0; i < 8; i++) {
+          const angle = (i / 8) * Math.PI * 2;
+          const len = boss.r * (0.6 + Math.sin(time * 4 + i * 0.5) * 0.3);
+          ctx.lineTo(Math.cos(angle) * len, Math.sin(angle) * len);
+        }
+        ctx.closePath();
+      } else if (drawPattern === 'snake' || drawPattern === 'homing') {
+        // Organic blob shape
+        for (let i = 0; i < 12; i++) {
+          const angle = (i / 12) * Math.PI * 2;
+          const wobble = Math.sin(time * 3 + i * 0.8) * boss.r * 0.2;
+          const len = boss.r * 0.7 + wobble;
+          ctx.lineTo(Math.cos(angle) * len, Math.sin(angle) * len);
+        }
+        ctx.closePath();
+      } else if (drawPattern === 'cross') {
+        // Cross shape
+        ctx.moveTo(-boss.r, 0);
+        ctx.lineTo(-boss.r * 0.3, 0);
+        ctx.lineTo(-boss.r * 0.3, -boss.r);
+        ctx.lineTo(boss.r * 0.3, -boss.r);
+        ctx.lineTo(boss.r * 0.3, 0);
+        ctx.lineTo(boss.r, 0);
+        ctx.lineTo(boss.r * 0.3, 0);
+        ctx.lineTo(boss.r * 0.3, boss.r);
+        ctx.lineTo(-boss.r * 0.3, boss.r);
+        ctx.lineTo(-boss.r * 0.3, 0);
+        ctx.closePath();
+      } else if (drawPattern === 'pulse' || drawPattern === 'wave') {
+        // Breathing circle
+        const breathe = Math.sin(time * 2) * 0.15 + 1;
+        ctx.arc(0, 0, boss.r * breathe, 0, Math.PI * 2);
+        ctx.closePath();
+      } else if (drawPattern === 'laser' || drawPattern === 'beam') {
+        // Diamond/pointing shape
+        ctx.moveTo(0, -boss.r * 1.2);
+        ctx.lineTo(boss.r * 0.7, 0);
+        ctx.lineTo(0, boss.r * 0.8);
+        ctx.lineTo(-boss.r * 0.7, 0);
+        ctx.closePath();
+      } else if (drawPattern === 'rain' || drawPattern === 'chaos') {
+        // Irregular rocky shape
+        for (let i = 0; i < 10; i++) {
+          const angle = (i / 10) * Math.PI * 2;
+          const irregularity = Math.random() ? (Math.sin(time * 5 + i) * 0.2) : 0;
+          const len = boss.r * (0.6 + irregularity);
+          if (i === 0) ctx.moveTo(Math.cos(angle) * len, Math.sin(angle) * len);
+          else ctx.lineTo(Math.cos(angle) * len, Math.sin(angle) * len);
+        }
+        ctx.closePath();
+      } else {
+        // Default: polygon based on phase
+        const sides = 3 + boss.phase;
+        for (let i = 0; i < sides; i++) {
+          const angle = (i / sides) * Math.PI * 2 - Math.PI / 2;
+          const px = Math.cos(angle) * boss.r;
+          const py = Math.sin(angle) * boss.r;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
       }
-      ctx.closePath();
       ctx.fill();
 
+      // === LAYER 3: Inner details ===
       // Inner pattern
       ctx.fillStyle = '#000000';
-      ctx.globalAlpha = 0.4;
+      ctx.globalAlpha = 0.5;
       ctx.beginPath();
-      const innerSides = sides;
-      const innerScale = 0.6;
-      for (let i = 0; i < innerSides; i++) {
-        const angle = (i / innerSides) * Math.PI * 2 - Math.PI / 2;
-        const px = Math.cos(angle) * boss.r * innerScale;
-        const py = Math.sin(angle) * boss.r * innerScale;
-        if (i === 0) ctx.moveTo(px, py);
-        else ctx.lineTo(px, py);
-      }
-      ctx.closePath();
+      ctx.arc(0, 0, boss.r * 0.5, 0, Math.PI * 2);
       ctx.fill();
       ctx.globalAlpha = 1;
 
-      // Core
-      ctx.shadowBlur = 15;
-      ctx.fillStyle = '#ffffff';
+      // === LAYER 4: Core ===
+      // Glowing core with pulse
+      const corePulse = Math.sin(time * 5) * 0.1 + 1;
+      const coreGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, boss.r * 0.3 * corePulse);
+      coreGradient.addColorStop(0, '#ffffff');
+      coreGradient.addColorStop(0.5, boss.color);
+      coreGradient.addColorStop(1, boss.color + '00');
+      ctx.fillStyle = coreGradient;
       ctx.beginPath();
-      ctx.arc(0, 0, boss.r * 0.2, 0, Math.PI * 2);
+      ctx.arc(0, 0, boss.r * 0.25 * corePulse, 0, Math.PI * 2);
       ctx.fill();
 
-      // Rotating ring effect
-      const ringAngle = Date.now() / 500;
+      // === LAYER 5: Rotating rings/orbits ===
+      const ringAngle = time * 2;
       ctx.strokeStyle = boss.color;
       ctx.lineWidth = 2;
-      ctx.globalAlpha = 0.5;
+      ctx.globalAlpha = 0.6;
+
+      // Primary orbit
       ctx.beginPath();
-      ctx.ellipse(0, 0, boss.r * 1.2, boss.r * 0.4, ringAngle, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.ellipse(0, 0, boss.r * 0.4, boss.r * 1.2, ringAngle, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, boss.r * 1.1, boss.r * 0.35, ringAngle, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Extra 3D ring
-      if (['galaxy', 'flower', 'ring', 'vortex'].includes(boss.pattern)) {
+      // Secondary orbit (perpendicular)
+      ctx.beginPath();
+      ctx.ellipse(0, 0, boss.r * 0.35, boss.r * 1.1, ringAngle * 0.7, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Extra rings for specific patterns
+      if (['galaxy', 'flower', 'vortex', 'burst'].includes(drawPattern)) {
         ctx.beginPath();
-        ctx.ellipse(0, 0, boss.r * 1.4, boss.r * 0.5, ringAngle * 1.5, 0, Math.PI * 2);
-        ctx.globalAlpha = 0.25;
+        ctx.ellipse(0, 0, boss.r * 1.3, boss.r * 0.5, ringAngle * 1.3, 0, Math.PI * 2);
+        ctx.globalAlpha = 0.3;
         ctx.stroke();
       }
 
+      // Orbiting particles for galaxy pattern
+      if (drawPattern === 'galaxy') {
+        for (let i = 0; i < 4; i++) {
+          const orbitAngle = ringAngle * 1.5 + (i / 4) * Math.PI * 2;
+          const orbitX = Math.cos(orbitAngle) * boss.r * 0.9;
+          const orbitY = Math.sin(orbitAngle) * boss.r * 0.3;
+          ctx.fillStyle = '#ffffff';
+          ctx.globalAlpha = 0.8;
+          ctx.beginPath();
+          ctx.arc(orbitX, orbitY, 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
       ctx.globalAlpha = 1;
 
+      // === LAYER 6: Energy spikes (for aggressive patterns) ===
+      if (['laser', 'beam', 'cross', 'rain'].includes(drawPattern)) {
+        ctx.strokeStyle = boss.color;
+        ctx.lineWidth = 3;
+        ctx.globalAlpha = 0.7;
+        for (let i = 0; i < 8; i++) {
+          const angle = (i / 8) * Math.PI * 2 + time;
+          const innerR = boss.r * 0.9;
+          const outerR = boss.r * 1.3 + Math.sin(time * 8 + i) * 5;
+          ctx.beginPath();
+          ctx.moveTo(Math.cos(angle) * innerR, Math.sin(angle) * innerR);
+          ctx.lineTo(Math.cos(angle) * outerR, Math.sin(angle) * outerR);
+          ctx.stroke();
+        }
+      }
+
+      // Flash effect during entrance
+      if (!boss.entranceComplete) {
+        ctx.fillStyle = boss.color;
+        ctx.globalAlpha = 0.3 + Math.sin(time * 20) * 0.2;
+        ctx.fill();
+      }
+
+      ctx.globalAlpha = 1;
       ctx.restore();
     }
 
@@ -1174,6 +1395,10 @@
           addCombo();
           triggerScreenShake(2, 0.05);
 
+          // Trigger UI hit feedback
+          uiFlashTimer = 0.2;
+          uiFlashColor = boss.color;
+
           if (boss.hp <= 0) {
             spawnExplosion(boss.x, boss.y, boss.color, 50);
             triggerScreenShake(6, 0.15);
@@ -1192,60 +1417,183 @@
       }
     }
 
+    // ============ ENHANCED UI SYSTEM ============
+    let uiFlashTimer = 0;
+    let uiFlashColor = '#ff0000';
+
     function renderUI() {
-      // Lives
-      ctx.fillStyle = '#ff4444';
-      ctx.font = '20px monospace';
+      const time = Date.now() / 1000;
+
+      // === PLAYER STATUS AREA (Left side) ===
+      // Lives with animation
       for (let i = 0; i < player.lives; i++) {
-        ctx.fillText('❤', 10 + i * 24, 30);
+        ctx.save();
+        const heartX = 10 + i * 24;
+        const heartY = 30;
+        // Pulse effect
+        const pulse = 1 + Math.sin(time * 4 + i) * 0.1;
+        ctx.translate(heartX, heartY);
+        ctx.scale(pulse, pulse);
+        ctx.fillStyle = '#ff4466';
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = '#ff0000';
+        ctx.fillText('❤', 0, 0);
+        ctx.restore();
       }
 
-      // Power meter
-      ctx.fillStyle = '#333';
-      ctx.fillRect(10, 40, 60, 8);
-      for (let i = 0; i < player.power; i++) {
-        ctx.fillStyle = '#ff0000';
-        ctx.fillRect(10 + i * 15, 40, 12, 8);
+      // Power meter with gradient effect
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(10, 42, 80, 10);
+      ctx.strokeStyle = '#333366';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(10, 42, 80, 10);
+
+      if (player.power > 0) {
+        const powerGradient = ctx.createLinearGradient(10, 0, 90, 0);
+        powerGradient.addColorStop(0, '#ff0000');
+        powerGradient.addColorStop(0.5, '#ff00ff');
+        powerGradient.addColorStop(1, '#ff0000');
+        ctx.fillStyle = powerGradient;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#ff0000';
+        ctx.fillRect(12, 44, player.power * 14, 6);
+        ctx.shadowBlur = 0;
       }
 
-      // Boss health bar with animation
+      // Power label
+      ctx.fillStyle = '#666';
+      ctx.font = '10px monospace';
+      ctx.fillText('PWR', 10, 65);
+
+      // === BOSS HEALTH BAR (Top Right) ===
       if (boss.active) {
-        // Boss name + Wave
+        const barX = canvas.width - 220;
+        const barY = 14;
+        const barW = 210;
+        const barH = 28;
+
+        // BOSS name with glow (pulsing)
+        ctx.save();
         ctx.fillStyle = boss.color;
-        ctx.font = '12px monospace';
+        ctx.font = 'bold 14px "Courier New", monospace';
+        ctx.textAlign = 'left';
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = boss.color;
+        const nameGlow = 0.7 + Math.sin(time * 3) * 0.3;
+        ctx.globalAlpha = nameGlow;
+        if (boss.name) ctx.fillText(boss.name, barX, barY);
         ctx.textAlign = 'right';
-        ctx.fillText(`WAVE ${waveCount}`, canvas.width - 10, 8);
+        ctx.font = '12px monospace';
+        ctx.fillText(`WAVE ${waveCount}`, canvas.width - 8, barY - 2);
+        ctx.globalAlpha = 1;
+        ctx.restore();
+
+        // Health bar background with border
+        ctx.fillStyle = '#0a0a1a';
+        ctx.fillRect(barX, barY + 4, barW, barH);
+        ctx.strokeStyle = boss.color + '66';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(barX, barY + 4, barW, barH);
+
+        // Health bar damage trail (the darker portion showing damage)
+        const hpPercent = Math.max(0, displayHp / boss.maxHp);
+        const targetPercent = Math.max(0, boss.hp / boss.maxHp);
+
+        // Red warning flash when hit
+        if (uiFlashTimer > 0) {
+          uiFlashTimer -= 0.016;
+          ctx.fillStyle = uiFlashColor;
+          ctx.globalAlpha = 0.3 * (uiFlashTimer / 0.2);
+          ctx.fillRect(barX + 2, barY + 6, barW - 4, barH - 4);
+          ctx.globalAlpha = 1;
+        }
+
+        // Health bar gradient fill (animated shimmer)
+        const healthGradient = ctx.createLinearGradient(barX, 0, barX + barW * hpPercent, 0);
+        healthGradient.addColorStop(0, boss.color);
+        healthGradient.addColorStop(0.5, boss.color + 'cc');
+        healthGradient.addColorStop(1, boss.color);
+
+        ctx.fillStyle = healthGradient;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = boss.color;
+
+        // Smooth health transition
+        const fillW = (barW - 4) * hpPercent;
+        ctx.fillRect(barX + 2, barY + 6, fillW, barH - 4);
+        ctx.shadowBlur = 0;
+
+        // Health bar shine effect (animated)
+        ctx.save();
+        const shineX = barX + 2 + (time * 100 % (barW + 60)) - 60;
+        const gradient = ctx.createLinearGradient(shineX - 30, 0, shineX + 30, 0);
+        gradient.addColorStop(0, 'transparent');
+        gradient.addColorStop(0.5, 'rgba(255,255,255,0.3)');
+        gradient.addColorStop(1, 'transparent');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(barX + 2, barY + 6, fillW, barH - 4);
+        ctx.restore();
+
+        // HP numbers
+        ctx.fillStyle = '#aaa';
+        ctx.font = '11px monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(`${Math.ceil(boss.hp)} / ${boss.maxHp}`, barX + barW - 4, barY + barH + 11);
         ctx.textAlign = 'left';
 
-        ctx.fillStyle = '#222';
-        ctx.fillRect(canvas.width - 210, 16, 200, 20);
-        const hpPercent = Math.max(0, displayHp / boss.maxHp);
-        ctx.fillStyle = boss.color;
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = boss.color;
-        ctx.fillRect(canvas.width - 210, 16, 200 * hpPercent, 20);
-        ctx.shadowBlur = 0;
-        ctx.strokeStyle = boss.color;
-        ctx.lineWidth = 2;
-        ctx.strokeRect(canvas.width - 210, 16, 200, 20);
+        // Critical health warning (low HP flicker)
+        if (boss.hp / boss.maxHp < 0.25) {
+          ctx.save();
+          ctx.globalAlpha = 0.5 + Math.sin(time * 15) * 0.5;
+          ctx.fillStyle = '#ff0000';
+          ctx.font = 'bold 16px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('⚠ CRITICAL', canvas.width / 2, 80);
+          ctx.textAlign = 'left';
+          ctx.restore();
+        }
       }
 
-      // Wave counter
-      ctx.fillStyle = '#888';
-      ctx.font = '14px monospace';
-      ctx.fillText(`WAVE ${waveCount}`, 10, canvas.height - 10);
+      // === SCORE AREA (Bottom Right) ===
+      const scoreY = canvas.height - 15;
 
-      // Score
-      ctx.fillStyle = '#fff';
+      // Score with glow
+      ctx.save();
+      ctx.fillStyle = '#00ffff';
+      ctx.font = 'bold 16px "Courier New", monospace';
       ctx.textAlign = 'right';
-      ctx.fillText(`SCORE: ${score}`, canvas.width - 10, canvas.height - 10);
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = '#00ffff';
+      // Score increment animation
+      const displayScore = score;
+      ctx.fillText(`${displayScore}`.padStart(8, '0'), canvas.width - 8, scoreY);
+      ctx.shadowBlur = 0;
 
-      // Graze
+      // Graze counter
       if (graze > 0) {
-        ctx.fillStyle = '#ff00ff';
+        ctx.fillStyle = '#ff66ff';
         ctx.font = '12px monospace';
-        ctx.fillText(`GRAZE: ${graze}`, canvas.width - 10, canvas.height - 28);
+        ctx.shadowColor = '#ff00ff';
+        ctx.shadowBlur = 5;
+        ctx.fillText(`GRAZE +${graze}`, canvas.width - 8, scoreY - 20);
       }
+      ctx.restore();
+
+      // === WAVE COUNTER (Bottom Left) ===
+      ctx.save();
+      ctx.fillStyle = '#8888aa';
+      ctx.font = '14px "Courier New", monospace';
+      ctx.fillText(`WAVE ${waveCount}`, 10, canvas.height - 12);
+
+      // Pause indicator
+      if (gameState === STATE.PAUSED) {
+        ctx.fillStyle = '#ffff00';
+        ctx.font = 'bold 24px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('PAUSED', canvas.width / 2, canvas.height / 2);
+      }
+      ctx.restore();
+
       ctx.textAlign = 'left';
     }
 
@@ -1678,13 +2026,41 @@
     function renderScorePopups() {
       for (const p of scorePopups) {
         ctx.save();
-        ctx.globalAlpha = Math.min(1, p.life * 2);
-        ctx.fillStyle = '#ffff00';
-        ctx.font = `bold ${16 * p.scale}px monospace`;
+        const alpha = Math.min(1, p.life * 2);
+
+        // Background glow
+        const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 30);
+        gradient.addColorStop(0, `rgba(255, 255, 0, ${alpha * 0.5})`);
+        gradient.addColorStop(1, 'transparent');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(p.x - 30, p.y - 30, 60, 60);
+
+        // Main text with color based on value
+        let color = '#ffff00';
+        if (p.value >= 100) color = '#ff00ff';
+        else if (p.value >= 50) color = '#ff6600';
+        else if (p.value >= 20) color = '#00ff00';
+
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = color;
+        ctx.font = `bold ${18 * p.scale}px "Courier New", monospace`;
         ctx.textAlign = 'center';
-        ctx.shadowBlur = 5;
-        ctx.shadowColor = '#ffff00';
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = color;
         ctx.fillText(`+${p.value}`, p.x, p.y);
+
+        // Small sparkle effect
+        if (p.life > 0.3) {
+          const sparkleAngle = Date.now() / 100;
+          ctx.fillStyle = '#ffffff';
+          ctx.globalAlpha = alpha * 0.8;
+          for (let i = 0; i < 3; i++) {
+            const angle = sparkleAngle + (i / 3) * Math.PI * 2;
+            const sx = p.x + Math.cos(angle) * 15;
+            const sy = p.y + Math.sin(angle) * 10;
+            ctx.fillRect(sx, sy, 2, 2);
+          }
+        }
         ctx.restore();
       }
     }
@@ -1711,13 +2087,32 @@
     function renderCombo() {
       if (combo >= 2) {
         ctx.save();
-        const scale = 1 + Math.min(combo * 0.1, 0.5);
+        const time = Date.now() / 1000;
+        const scale = 1 + Math.min(combo * 0.08, 0.6);
+        const comboY = 70 + Math.sin(time * 8) * 3;
+
+        // Combo glow background
+        const gradient = ctx.createRadialGradient(canvas.width/2, comboY, 0, canvas.width/2, comboY, 80);
+        gradient.addColorStop(0, 'rgba(255, 102, 0, 0.3)');
+        gradient.addColorStop(1, 'transparent');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(canvas.width/2 - 100, comboY - 50, 200, 100);
+
+        // Main combo text
         ctx.fillStyle = '#ff6600';
-        ctx.font = `bold ${24 * scale}px monospace`;
+        ctx.font = `bold ${24 * scale}px "Courier New", monospace`;
         ctx.textAlign = 'center';
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 20;
         ctx.shadowColor = '#ff6600';
-        ctx.fillText(`${combo}x COMBO!`, canvas.width / 2, 70);
+
+        // Combo counter with animation
+        const comboPulse = 1 + Math.sin(time * 10) * 0.1;
+        ctx.save();
+        ctx.translate(canvas.width / 2, comboY);
+        ctx.scale(comboPulse, comboPulse);
+        ctx.fillText(`${combo}x COMBO!`, 0, 0);
+        ctx.restore();
+
         ctx.restore();
       }
     }
