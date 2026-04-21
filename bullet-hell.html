@@ -104,7 +104,25 @@
     ];
 
     function spawnPowerup(x, y) {
-      const type = POWERUP_TYPES[Math.floor(Math.random() * POWERUP_TYPES.length)];
+      // Weight types based on wave - early game more SCORE/BOMB, later more POWER
+      const rand = Math.random();
+      let type;
+      if (waveCount <= 2) {
+        // Early: mostly SCORE, some BOMB, rare POWER
+        if (rand < 0.5) type = POWERUP_TYPES[1]; // SCORE
+        else if (rand < 0.8) type = POWERUP_TYPES[2]; // BOMB
+        else type = POWERUP_TYPES[0]; // POWER
+      } else if (waveCount <= 5) {
+        // Mid: mix of all
+        if (rand < 0.4) type = POWERUP_TYPES[1]; // SCORE
+        else if (rand < 0.7) type = POWERUP_TYPES[2]; // BOMB
+        else type = POWERUP_TYPES[0]; // POWER
+      } else {
+        // Later: more POWER
+        if (rand < 0.3) type = POWERUP_TYPES[1]; // SCORE
+        else if (rand < 0.5) type = POWERUP_TYPES[2]; // BOMB
+        else type = POWERUP_TYPES[0]; // POWER
+      }
       powerups.push({
         x, y,
         vx: (Math.random() - 0.5) * 30,
@@ -148,7 +166,7 @@
 
     function applyPowerup(type) {
       if (type.name === 'POWER' && player.power < player.maxPower) {
-        player.power++;
+        player.power = Math.min(player.power + 1, player.maxPower);
         spawnSparkle(player.x, player.y, '#ff0066');
         triggerScreenFlash(0.3, '#ff0066');
       } else if (type.name === 'SCORE') {
@@ -667,8 +685,8 @@
 
     let bossIndex = 0;
     let waveCount = 1;
-    const HP_BASE = 80;
-    const HP_INCREMENT = 30;
+    const HP_BASE = 200;
+    const HP_INCREMENT = 100;
 
     function startBoss() {
       const waveMultiplier = Math.floor(waveCount / 3);
@@ -778,15 +796,210 @@
         return; // Don't fire during entrance
       }
 
-      // Simple horizontal movement (faster as waves increase)
-      const speedMult = 1 + waveCount * 0.05;
-      boss.x += Math.sin(Date.now() / 1000) * 50 * speedMult * dt;
+      // Pattern-linked movement
+      const pattern = boss.pattern;
+      if (pattern === 'spiral' || pattern === 'helix' || pattern === 'double_spiral') {
+        // Circular movement
+        const t = Date.now() / 1000;
+        boss.x = canvas.width / 2 + Math.cos(t) * 100;
+        boss.y = 80 + Math.sin(t * 2) * 20;
+      }
+      else if (pattern === 'ring' || pattern === 'flower' || pattern === 'galaxy') {
+        // Stationary with slight drift
+        boss.x += Math.sin(Date.now() / 500) * 20 * dt;
+      }
+      else if (pattern === 'snake' || pattern === 'wave') {
+        // Z-pattern
+        const t = Date.now() / 500;
+        boss.x = canvas.width / 2 + Math.sin(t) * 150;
+        boss.y = 80 + Math.sin(t * 2) * 30;
+      }
+      else if (pattern === 'beam' || pattern === 'laser') {
+        // Track player X
+        const targetX = player.x;
+        boss.x += (targetX - boss.x) * 2 * dt;
+      }
+      else if (pattern === 'rain' || pattern === 'chaos') {
+        // Random position shifts
+        if (Math.random() < 0.02) {
+          boss.x = 100 + Math.random() * (canvas.width - 200);
+        }
+      }
+      else {
+        // Default movement (faster as waves increase)
+        const speedMult = 1 + waveCount * 0.05;
+        boss.x += Math.sin(Date.now() / 1000) * 50 * speedMult * dt;
+      }
 
       boss.cooldown -= dt;
       if (boss.cooldown <= 0) {
         fireBossPattern();
         boss.cooldown = Math.max(0.15, 0.5 - waveCount * 0.02);
       }
+    }
+
+    function checkBossAbilities(dt) {
+      if (!boss.active) return;
+
+      const hpPercent = boss.hp / boss.maxHp;
+      const waveDifficulty = Math.min(waveCount / 10, 1);
+
+      // Update all cooldowns
+      for (const key in boss.abilityCooldowns) {
+        if (boss.abilityCooldowns[key] > 0) {
+          boss.abilityCooldowns[key] -= dt;
+        }
+      }
+
+      const availableAbilities = Math.floor(waveDifficulty * 10) + 3;
+
+      // 1. TELEPORT - HP < 80%
+      if (hpPercent < 0.8 && boss.abilityCooldowns.teleport <= 0 && availableAbilities >= 1) {
+        triggerTeleport();
+        boss.abilityCooldowns.teleport = 15;
+      }
+
+      // 2. SUMMON - Every 30 seconds
+      if (boss.abilityCooldowns.summon <= 0 && availableAbilities >= 2) {
+        triggerSummon();
+        boss.abilityCooldowns.summon = 30;
+      }
+
+      // 3. SHIELD - HP < 60%
+      if (hpPercent < 0.6 && boss.shieldHp <= 0 && availableAbilities >= 3) {
+        triggerShield();
+      }
+
+      // 4. CHARGE - HP < 40%
+      if (hpPercent < 0.4 && boss.abilityCooldowns.charge <= 0 && availableAbilities >= 4) {
+        triggerChargeAttack();
+        boss.abilityCooldowns.charge = 20;
+      }
+
+      // 5. CLONE - HP < 50%
+      if (hpPercent < 0.5 && boss.abilityCooldowns.clone <= 0 && availableAbilities >= 5) {
+        triggerClone();
+        boss.abilityCooldowns.clone = 25;
+      }
+
+      // 6. PORTAL - Every 45 seconds
+      if (boss.abilityCooldowns.portal <= 0 && availableAbilities >= 6) {
+        triggerPortal();
+        boss.abilityCooldowns.portal = 45;
+      }
+
+      // 7. BLACK_HOLE - HP < 30%
+      if (hpPercent < 0.3 && boss.abilityCooldowns.blackHole <= 0 && availableAbilities >= 7) {
+        triggerBlackHole();
+        boss.abilityCooldowns.blackHole = 30;
+      }
+
+      // 8. WHITE_HOLE - HP < 35%
+      if (hpPercent < 0.35 && boss.abilityCooldowns.whiteHole <= 0 && availableAbilities >= 8) {
+        triggerWhiteHole();
+        boss.abilityCooldowns.whiteHole = 25;
+      }
+
+      // 9. LASER - HP < 25%
+      if (hpPercent < 0.25 && boss.abilityCooldowns.laser <= 0 && availableAbilities >= 9) {
+        triggerLaser();
+        boss.abilityCooldowns.laser = 20;
+      }
+
+      // 10. PHANTOM - HP < 20%
+      if (hpPercent < 0.2 && boss.abilityCooldowns.phantom <= 0 && availableAbilities >= 10) {
+        triggerPhantomTank();
+        boss.abilityCooldowns.phantom = 15;
+      }
+    }
+
+    function triggerTeleport() {
+      spawnExplosion(boss.x, boss.y, '#ffffff', 20);
+      boss.x = canvas.width - boss.x;
+      boss.y = 80 + (Math.random() - 0.5) * 60;
+      triggerScreenShake(5, 0.2);
+      spawnExplosion(boss.x, boss.y, boss.color, 20);
+    }
+
+    function triggerSummon() {
+      const count = 2 + Math.floor(Math.random() * 2);
+      for (let i = 0; i < count; i++) {
+        minions.push({
+          x: 50 + Math.random() * (canvas.width - 100),
+          y: -20,
+          vx: 20 + Math.random() * 30,
+          vy: 50 + Math.random() * 30,
+          r: 10,
+          hp: 20,
+          color: boss.color
+        });
+      }
+    }
+
+    function triggerShield() {
+      boss.shieldHp = boss.maxHp * 0.3;
+    }
+
+    function triggerChargeAttack() {
+      boss.charging = true;
+      boss.chargeTime = 0;
+      triggerScreenShake(3, 0.5);
+    }
+
+    function triggerClone() {
+      boss.clones = [];
+      for (let i = 0; i < 2; i++) {
+        boss.clones.push({
+          x: boss.x + (Math.random() - 0.5) * 100,
+          y: boss.y + (Math.random() - 0.5) * 50,
+          alpha: 0.5,
+          offset: Math.random() * Math.PI * 2
+        });
+      }
+      setTimeout(() => { boss.clones = []; }, 5000);
+    }
+
+    function triggerPortal() {
+      boss.portals = [
+        { x: 50, y: canvas.height / 2, active: true },
+        { x: canvas.width - 50, y: canvas.height / 2, active: true }
+      ];
+      setTimeout(() => { boss.portals = []; }, 8000);
+    }
+
+    function triggerBlackHole() {
+      boss.blackHoleActive = true;
+      setTimeout(() => { boss.blackHoleActive = false; }, 4000);
+    }
+
+    function triggerWhiteHole() {
+      boss.whiteHoleActive = true;
+      setTimeout(() => { boss.whiteHoleActive = false; }, 3000);
+    }
+
+    function triggerLaser() {
+      boss.laserActive = true;
+      boss.laserAngle = Math.atan2(player.y - boss.y, player.x - boss.x);
+      setTimeout(() => { boss.laserActive = false; }, 2000);
+    }
+
+    function triggerPhantomTank() {
+      boss.phantomTankActive = true;
+      boss.phantomTankX = Math.random() > 0.5 ? 50 : canvas.width - 50;
+      boss.phantomTankVisible = true;
+      setTimeout(() => {
+        boss.phantomTankVisible = false;
+        bullets.push({
+          x: boss.phantomTankX,
+          y: 100,
+          vx: boss.phantomTankX < canvas.width / 2 ? 200 : -200,
+          vy: 150,
+          r: 8,
+          owner: 'boss',
+          color: '#ff0000'
+        });
+      }, 500);
+      setTimeout(() => { boss.phantomTankActive = false; }, 3000);
     }
 
     function renderBoss() {
@@ -1536,8 +1749,9 @@
             spawnExplosion(boss.x, boss.y, boss.color, 50);
             triggerScreenShake(6, 0.15);
             triggerScreenFlash(0.8, boss.color);
-            // Spawn powerups
-            for (let i = 0; i < 5; i++) {
+            // Spawn powerups - increase with waves
+            const dropCount = Math.min(1 + Math.floor(waveCount / 3), 6);
+            for (let i = 0; i < dropCount; i++) {
               spawnPowerup(boss.x + (Math.random() - 0.5) * 80, boss.y + (Math.random() - 0.5) * 60);
             }
             score += 1000;
@@ -2459,6 +2673,7 @@
       updatePowerups(dt);
       updateMinions(dt);
       updateBoss(dt);
+      checkBossAbilities(dt);
       updateMeteors(dt);
       updateParticles(dt);
       updateSparkles(dt);
