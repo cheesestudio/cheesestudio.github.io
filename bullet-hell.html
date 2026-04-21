@@ -146,15 +146,27 @@
     function applyPowerup(type) {
       if (type.name === 'POWER' && player.power < player.maxPower) {
         player.power++;
-        spawnSparkle(player.x, player.y, '#ff0000');
-        triggerScreenFlash(0.3, '#ff0000');
+        spawnSparkle(player.x, player.y, '#ff0066');
+        triggerScreenFlash(0.3, '#ff0066');
       } else if (type.name === 'SCORE') {
         score += 500;
-        spawnSparkle(player.x, player.y, '#ffff00');
+        spawnSparkle(player.x, player.y, '#ffcc00');
       } else if (type.name === 'BOMB') {
         player.lives = Math.min(player.lives + 1, 5);
-        spawnSparkle(player.x, player.y, '#00ff00');
-        triggerScreenFlash(0.3, '#00ff00');
+        spawnSparkle(player.x, player.y, '#00ff66');
+        triggerScreenFlash(0.3, '#00ff66');
+      } else if (type.name === 'LIFE') {
+        player.lives = Math.min(player.lives + 1, 5);
+        spawnSparkle(player.x, player.y, '#ff4444');
+        triggerScreenFlash(0.5, '#ff4444');
+      } else if (type.name === 'SHIELD') {
+        player.invincible = Math.min(player.invincible + 3, 5);
+        spawnSparkle(player.x, player.y, '#00ccff');
+        triggerScreenFlash(0.3, '#00ccff');
+      } else if (type.name === 'RAPID') {
+        player.shootRate = Math.max(0.05, player.shootRate - 0.05);
+        spawnSparkle(player.x, player.y, '#ff6600');
+        triggerScreenFlash(0.2, '#ff6600');
       }
     }
 
@@ -1404,8 +1416,8 @@
             triggerScreenShake(6, 0.15);
             triggerScreenFlash(0.8, boss.color);
             // Spawn powerups
-            for (let i = 0; i < 3; i++) {
-              spawnPowerup(boss.x + (Math.random() - 0.5) * 60, boss.y + (Math.random() - 0.5) * 40);
+            for (let i = 0; i < 5; i++) {
+              spawnPowerup(boss.x + (Math.random() - 0.5) * 80, boss.y + (Math.random() - 0.5) * 60);
             }
             score += 1000;
             spawnScorePopup(boss.x, boss.y - 30, 1000);

@@ -2,6 +2,10 @@
 
 赛博朋克风格弹幕射击游戏，HTML5 Canvas 单文件实现。
 
+[![Play Now](https://img.shields.io/badge/Play%20Now-Launch-brightgreen?style=flat&logo=gamepad)](https://cheesestudio.github.io/bullet-hell-game/)
+
+> 💡 点击上方按钮直接在浏览器玩！或访问 https://cheesestudio.github.io/bullet-hell-game/
+
 ## 游戏特色
 
 - **3 BOSS × 3 形态 = 9 关卡**：VOID / PULSE / CORE 三大BOSS
@@ -23,20 +27,17 @@
 
 ## 运行方式
 
-### 方法一：直接打开
+### 方法一：直接打开（推荐）
 直接在浏览器中打开 `bullet-hell.html` 文件
 
-### 方法二：本地服务器
-```bash
-# Python 3
-python -m http.server 8000
+### 方法二：GitHub Pages 在线玩
+访问 https://cheesestudio.github.io/bullet-hell-game/
 
+### 方法三：本地服务器
+```bash
+python -m http.server 8000
 # 访问 http://localhost:8000
 ```
-
-### 方法三：VS Code Live Server
-1. 安装 VS Code 扩展 "Live Server"
-2. 右键点击 `bullet-hell.html` → "Open with Live Server"
 
 ## 游戏系统
 
@@ -47,19 +48,11 @@ python -m http.server 8000
   - 🟡 S - 500 分数
   - 🟢 B - 获得额外生命
 
-## 游戏截图
-
-```
-BULLET HELL
-BOSS RUSH
-PRESS SPACE TO START
-```
-
 ## 技术栈
 
 - HTML5 Canvas
-- Vanilla JavaScript (无框架依赖)
-- Web Audio API (可选音效)
+- Vanilla JavaScript
+- 无框架依赖
 
 ## License
 
