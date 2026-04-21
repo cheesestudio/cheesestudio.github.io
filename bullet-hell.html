@@ -43,6 +43,7 @@
         case STATE.PLAYING: update(dt); break;
         case STATE.MENU: updateMenu(dt); break;
         case STATE.GAMEOVER: updateGameOver(dt); break;
+        case STATE.PAUSED: updatePause(dt); break;
       }
 
       // Toggle pause
@@ -210,6 +211,11 @@
 
       ctx.save();
       ctx.translate(player.x, player.y);
+
+      // Subtle tilt based on movement direction
+      const targetTilt = (keys['ArrowLeft'] || keys['a'] || keys['ArrowRight'] || keys['d']) ?
+        ((keys['ArrowLeft'] || keys['a']) ? -0.15 : 0) + ((keys['ArrowRight'] || keys['d']) ? 0.15 : 0) : 0;
+      ctx.rotate(targetTilt + Math.sin(Date.now() / 200) * 0.02);
 
       // Graze glow
       if (player.grazeTime > 0) {
@@ -449,7 +455,9 @@
       phase: 0,
       cooldown: 0,
       pattern: 0,
-      active: false
+      active: false,
+      entranceTime: 0,
+      entranceComplete: false
     };
 
     const BOSS_PHASES = [
@@ -467,8 +475,14 @@
       { name: 'CORE', hp: 150, color: '#ff8800', pattern: 'rain' }
     ];
 
-    const BOSS_PATTERNS = ['laser', 'ring', 'spiral', 'wave', 'wall', 'scatter', 'beam', 'homing', 'rain'];
-    const BOSS_COLORS = ['#ff00ff', '#00ff00', '#ff8800', '#00ffff', '#ff4444', '#ffff00', '#ff0066', '#66ff00', '#8800ff'];
+    const BOSS_PATTERNS = [
+      'laser', 'ring', 'spiral', 'wave', 'wall', 'scatter', 'beam', 'homing', 'rain',
+      'double_spiral', 'flower', 'cross', 'snake', 'pulse', 'vortex', 'burst', 'helix', 'galaxy', 'chaos'
+    ];
+    const BOSS_COLORS = [
+      '#ff00ff', '#00ff00', '#ff8800', '#00ffff', '#ff4444', '#ffff00',
+      '#ff0066', '#66ff00', '#8800ff', '#ff6600', '#00ff66', '#6600ff'
+    ];
 
     let bossIndex = 0;
     let waveCount = 1;
@@ -476,29 +490,48 @@
     const HP_INCREMENT = 30;
 
     function startBoss() {
-      const baseConfig = BOSS_PHASES[bossIndex % BOSS_PHASES.length];
       const waveMultiplier = Math.floor(waveCount / 3);
       const hp = Math.floor((HP_BASE + waveCount * HP_INCREMENT) * (1 + waveMultiplier * 0.3));
 
       boss.hp = boss.maxHp = hp;
+      displayHp = hp;
       boss.phase = (bossIndex % 3);
       boss.pattern = BOSS_PATTERNS[bossIndex % BOSS_PATTERNS.length];
       boss.color = BOSS_COLORS[bossIndex % BOSS_COLORS.length];
       boss.active = true;
       boss.x = canvas.width / 2;
-      boss.y = 100;
+      boss.y = -50;
+      boss.entranceTime = 0;
+      boss.entranceComplete = false;
     }
 
     function updateBoss(dt) {
       if (!boss.active) return;
 
-      // Simple horizontal movement
-      boss.x += Math.sin(Date.now() / 1000) * 50 * dt;
+      // Boss entrance animation
+      if (!boss.entranceComplete) {
+        boss.entranceTime += dt;
+        const targetY = 80;
+        const progress = Math.min(boss.entranceTime / 1.5, 1);
+        // Easing: ease-out back
+        const ease = 1 - Math.pow(1 - progress, 3);
+        boss.y = -50 + (targetY + 50) * ease;
+
+        if (progress >= 1) {
+          boss.entranceComplete = true;
+          boss.y = targetY;
+        }
+        return; // Don't fire during entrance
+      }
+
+      // Simple horizontal movement (faster as waves increase)
+      const speedMult = 1 + waveCount * 0.05;
+      boss.x += Math.sin(Date.now() / 1000) * 50 * speedMult * dt;
 
       boss.cooldown -= dt;
       if (boss.cooldown <= 0) {
         fireBossPattern();
-        boss.cooldown = 0.5;
+        boss.cooldown = Math.max(0.15, 0.5 - waveCount * 0.02);
       }
     }
 
@@ -708,6 +741,272 @@
           });
         }
       }
+      else if (p === 'double_spiral') {
+        const angle = Date.now() / 200;
+        for (let j = 0; j < 2; j++) {
+          const offset = j * Math.PI;
+          bullets.push({
+            x: boss.x,
+            y: boss.y,
+            vx: Math.cos(angle + offset) * 80,
+            vy: Math.sin(angle + offset) * 80 + 50,
+            r: 4,
+            owner: 'boss',
+            color: boss.color
+          });
+        }
+      }
+      else if (p === 'flower') {
+        const angle = Date.now() / 300;
+        for (let i = 0; i < 6; i++) {
+          const a = angle + (i / 6) * Math.PI * 2;
+          bullets.push({
+            x: boss.x,
+            y: boss.y,
+            vx: Math.cos(a) * 60,
+            vy: Math.sin(a) * 60 + 30,
+            r: 5,
+            owner: 'boss',
+            color: boss.color
+          });
+        }
+      }
+      else if (p === 'cross') {
+        const angles = [0, Math.PI/2, Math.PI, Math.PI*1.5];
+        for (const a of angles) {
+          bullets.push({
+            x: boss.x,
+            y: boss.y,
+            vx: Math.cos(a) * 150,
+            vy: Math.sin(a) * 150,
+            r: 6,
+            owner: 'boss',
+            color: '#ffffff'
+          });
+        }
+      }
+      else if (p === 'snake') {
+        const t = Date.now() / 100;
+        for (let i = 0; i < 5; i++) {
+          const offset = i * 15;
+          const angle = Math.sin((t + offset) / 20) * Math.PI;
+          bullets.push({
+            x: boss.x + Math.cos(t / 100 + i) * 30,
+            y: boss.y + 20 + i * 15,
+            vx: Math.cos(angle) * 80,
+            vy: Math.sin(angle) * 80 + 40,
+            r: 4,
+            owner: 'boss',
+            color: boss.color
+          });
+        }
+      }
+      else if (p === 'pulse') {
+        if (!boss.pulseCount) boss.pulseCount = 0;
+        boss.pulseCount++;
+        if (boss.pulseCount % 15 === 0) {
+          for (let i = 0; i < 12; i++) {
+            const angle = (i / 12) * Math.PI * 2;
+            bullets.push({
+              x: boss.x,
+              y: boss.y,
+              vx: Math.cos(angle) * 100,
+              vy: Math.sin(angle) * 100,
+              r: 5,
+              owner: 'boss',
+              color: boss.color
+            });
+          }
+        }
+      }
+      else if (p === 'vortex') {
+        const angle = Date.now() / 150;
+        const count = 3;
+        for (let j = 0; j < count; j++) {
+          const a = angle + (j / count) * Math.PI * 2;
+          bullets.push({
+            x: boss.x,
+            y: boss.y,
+            vx: Math.cos(a) * 90,
+            vy: Math.sin(a) * 90 + 30,
+            r: 4,
+            owner: 'boss',
+            color: boss.color
+          });
+        }
+      }
+      else if (p === 'burst') {
+        if (!boss.burstTime) boss.burstTime = 0;
+        boss.burstTime += 16;
+        if (boss.burstTime % 500 < 20) {
+          for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2 + boss.burstTime / 200;
+            bullets.push({
+              x: boss.x,
+              y: boss.y,
+              vx: Math.cos(angle) * 180,
+              vy: Math.sin(angle) * 180,
+              r: 5,
+              owner: 'boss',
+              color: boss.color
+            });
+          }
+        }
+      }
+      else if (p === 'helix') {
+        const angle = Date.now() / 250;
+        for (let j = 0; j < 3; j++) {
+          const a = angle + j * Math.PI * 2 / 3;
+          bullets.push({
+            x: boss.x + Math.cos(a) * 20,
+            y: boss.y,
+            vx: Math.cos(a) * 70,
+            vy: Math.sin(a) * 70 + 60,
+            r: 4,
+            owner: 'boss',
+            color: j === 0 ? '#ff00ff' : j === 1 ? '#00ffff' : '#ffff00'
+          });
+        }
+      }
+      else if (p === 'galaxy') {
+        const angle = Date.now() / 400;
+        for (let i = 0; i < 5; i++) {
+          const a = angle + (i / 5) * Math.PI * 2;
+          bullets.push({
+            x: boss.x,
+            y: boss.y,
+            vx: Math.cos(a) * (50 + i * 15),
+            vy: Math.sin(a) * (50 + i * 15) + 20,
+            r: 3 + i,
+            owner: 'boss',
+            color: boss.color
+          });
+        }
+      }
+      else if (p === 'chaos') {
+        // Random spray with varied speeds
+        for (let i = 0; i < 4; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 50 + Math.random() * 100;
+          bullets.push({
+            x: boss.x + (Math.random() - 0.5) * 30,
+            y: boss.y + (Math.random() - 0.5) * 30,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed + 30,
+            r: 3 + Math.random() * 4,
+            owner: 'boss',
+            color: Math.random() > 0.5 ? boss.color : '#ffffff'
+          });
+        }
+      }
+
+      // Spawn minions for certain patterns
+      if (['double_spiral', 'flower', 'vortex', 'galaxy'].includes(p)) {
+        spawnMinions();
+      }
+    }
+
+    // ============ MINIONS SYSTEM ============
+    const minions = [];
+
+    function spawnMinions() {
+      if (minions.length >= 6) return;
+      if (Math.random() > 0.3) return;
+
+      const side = Math.random() > 0.5 ? -1 : 1;
+      minions.push({
+        x: side === -1 ? -20 : canvas.width + 20,
+        y: 50 + Math.random() * 150,
+        r: 12,
+        hp: 1,
+        vx: side * (30 + Math.random() * 20),
+        vy: (Math.random() - 0.5) * 30,
+        color: boss.color,
+        type: Math.random() > 0.5 ? 'floater' : 'zigzag'
+      });
+    }
+
+    function updateMinions(dt) {
+      for (let i = minions.length - 1; i >= 0; i--) {
+        const m = minions[i];
+
+        // Movement patterns
+        if (m.type === 'floater') {
+          m.x += m.vx * dt;
+          m.y += Math.sin(Date.now() / 300 + i) * 30 * dt;
+        } else if (m.type === 'zigzag') {
+          m.x += m.vx * dt;
+          m.y += m.vy * dt;
+          m.vy = Math.sin(Date.now() / 200) * 50;
+        }
+
+        // Shoot
+        if (Math.random() < 0.02) {
+          const dx = player.x - m.x;
+          const dy = player.y - m.y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          bullets.push({
+            x: m.x,
+            y: m.y,
+            vx: (dx/dist) * 100,
+            vy: (dy/dist) * 100,
+            r: 4,
+            owner: 'minion',
+            color: m.color
+          });
+        }
+
+        // Remove if off screen
+        if (m.x < -50 || m.x > canvas.width + 50 || m.y < -50 || m.y > canvas.height + 50) {
+          minions.splice(i, 1);
+        }
+      }
+    }
+
+    function renderMinions() {
+      for (const m of minions) {
+        ctx.save();
+        ctx.translate(m.x, m.y);
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = m.color;
+        ctx.fillStyle = m.color;
+        ctx.beginPath();
+        if (m.type === 'floater') {
+          ctx.arc(0, 0, m.r, 0, Math.PI * 2);
+        } else {
+          // Diamond shape for zigzag
+          ctx.moveTo(0, -m.r);
+          ctx.lineTo(m.r, 0);
+          ctx.lineTo(0, m.r);
+          ctx.lineTo(-m.r, 0);
+          ctx.closePath();
+        }
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function checkMinionHit() {
+      for (let i = bullets.length - 1; i >= 0; i--) {
+        const b = bullets[i];
+        if (b.owner === 'player') {
+          for (let j = minions.length - 1; j >= 0; j--) {
+            const m = minions[j];
+            const dx = b.x - m.x;
+            const dy = b.y - m.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < b.r + m.r) {
+              bullets.splice(i, 1);
+              minions.splice(j, 1);
+              spawnExplosion(m.x, m.y, m.color, 15);
+              score += 50;
+              spawnScorePopup(m.x, m.y, 50);
+              triggerScreenShake(2, 0.03);
+              break;
+            }
+          }
+        }
+      }
     }
 
     function checkBossHit() {
@@ -778,10 +1077,10 @@
         ctx.strokeRect(canvas.width - 210, 16, 200, 20);
       }
 
-      // Stage counter
+      // Wave counter
       ctx.fillStyle = '#888';
       ctx.font = '14px monospace';
-      ctx.fillText(`STAGE ${bossIndex + 1}/9`, 10, canvas.height - 10);
+      ctx.fillText(`WAVE ${waveCount}`, 10, canvas.height - 10);
 
       // Score
       ctx.fillStyle = '#fff';
@@ -800,13 +1099,67 @@
     // ============ PARTICLES + BACKGROUND ============
     const particles = [];
     const stars = [];
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 80; i++) {
       stars.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         s: Math.random() * 2 + 1,
         speed: Math.random() * 20 + 10
       });
+    }
+
+    // ============ METEORS ============
+    const meteors = [];
+
+    function spawnMeteor() {
+      meteors.push({
+        x: Math.random() * canvas.width,
+        y: -20,
+        length: Math.random() * 40 + 30,
+        speed: Math.random() * 150 + 100,
+        angle: Math.PI / 4 + (Math.random() - 0.5) * 0.3,
+        brightness: Math.random() * 0.5 + 0.5,
+        trail: []
+      });
+    }
+
+    function updateMeteors(dt) {
+      for (let i = meteors.length - 1; i >= 0; i--) {
+        const m = meteors[i];
+        m.x += Math.cos(m.angle) * m.speed * dt;
+        m.y += Math.sin(m.angle) * m.speed * dt;
+        m.trail.push({ x: m.x, y: m.y });
+        if (m.trail.length > 15) m.trail.shift();
+        if (m.y > canvas.height + 50 || m.x > canvas.width + 50) {
+          meteors.splice(i, 1);
+        }
+      }
+      if (Math.random() < 0.02) spawnMeteor();
+    }
+
+    function renderMeteors() {
+      for (const m of meteors) {
+        for (let i = 0; i < m.trail.length - 1; i++) {
+          const t = m.trail[i];
+          const alpha = (i / m.trail.length) * m.brightness;
+          const gradient = ctx.createLinearGradient(t.x, t.y, t.x + Math.cos(m.angle) * 20, t.y + Math.sin(m.angle) * 20);
+          gradient.addColorStop(0, `rgba(200, 220, 255, ${alpha})`);
+          gradient.addColorStop(1, 'rgba(200, 220, 255, 0)');
+          ctx.strokeStyle = gradient;
+          ctx.lineWidth = 2 * (i / m.trail.length);
+          ctx.beginPath();
+          ctx.moveTo(t.x, t.y);
+          ctx.lineTo(t.x + Math.cos(m.angle) * 15, t.y + Math.sin(m.angle) * 15);
+          ctx.stroke();
+        }
+        ctx.fillStyle = `rgba(255, 255, 255, ${m.brightness})`;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#aaddff';
+        ctx.beginPath();
+        ctx.arc(m.x, m.y, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
     }
 
     function spawnParticle(x, y, color) {
@@ -841,33 +1194,122 @@
     }
 
     function renderBackground() {
-      // Grid
+      // Animated grid with wave effect
+      const time = Date.now() / 1000;
       ctx.strokeStyle = '#1a1a3a';
       ctx.lineWidth = 1;
-      for (let x = 0; x < canvas.width; x += 40) {
+      for (let x = 0; x <= canvas.width; x += 40) {
         ctx.beginPath();
+        const offset = Math.sin(time + x * 0.01) * 5;
         ctx.moveTo(x, 0);
         ctx.lineTo(x, canvas.height);
         ctx.stroke();
       }
-      for (let y = 0; y < canvas.height; y += 40) {
+      for (let y = 0; y <= canvas.height; y += 40) {
         ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(canvas.width, y);
         ctx.stroke();
       }
 
-      // Stars
+      // Multi-layer parallax stars
       for (const s of stars) {
         s.y += s.speed * 0.016;
-        if (s.y > canvas.height) s.y = 0;
-        ctx.fillStyle = `rgba(255,255,255,${0.3 + s.s/5})`;
-        ctx.fillRect(s.x, s.y, s.s, s.s);
+        if (s.y > canvas.height) {
+          s.y = 0;
+          s.x = Math.random() * canvas.width;
+        }
+
+        // Different brightness based on layer
+        const alpha = 0.2 + s.s / 5;
+        const size = s.s;
+
+        // Twinkling effect
+        const twinkle = Math.sin(time * 3 + s.x * 0.1) * 0.3 + 0.7;
+
+        // Draw star with glow
+        if (s.speed > 20) {
+          // Foreground stars - brighter, bigger
+          ctx.fillStyle = `rgba(200, 220, 255, ${alpha * twinkle})`;
+          ctx.shadowBlur = 8;
+          ctx.shadowColor = '#ffffff';
+        } else {
+          // Background stars - dimmer
+          ctx.fillStyle = `rgba(150, 150, 180, ${alpha * twinkle * 0.5})`;
+          ctx.shadowBlur = 0;
+        }
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, size * twinkle, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+
+      // Ambient particles floating
+      if (Math.random() < 0.05) {
+        ambientParticles.push({
+          x: Math.random() * canvas.width,
+          y: canvas.height + 10,
+          vx: (Math.random() - 0.5) * 20,
+          vy: -10 - Math.random() * 20,
+          r: 1 + Math.random() * 2,
+          life: 3 + Math.random() * 2,
+          color: ['#00ffff', '#ff00ff', '#00ff88'][Math.floor(Math.random() * 3)]
+        });
+      }
+
+      for (let i = ambientParticles.length - 1; i >= 0; i--) {
+        const p = ambientParticles[i];
+        p.x += p.vx * 0.016;
+        p.y += p.vy * 0.016;
+        p.life -= 0.016;
+        if (p.life <= 0) {
+          ambientParticles.splice(i, 1);
+          continue;
+        }
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.life / 5;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
       }
     }
 
     // ============ GAME STATES ============
     let highScore = localStorage.getItem('bulletHellHigh') || 0;
+
+    // ============ LEADERBOARD ============
+    const MAX_LEADERBOARD_ENTRIES = 10;
+    let leaderboard = [];
+    let currentPage = 'MENU'; // MENU, LEADERBOARD
+
+    function loadLeaderboard() {
+      try {
+        const data = localStorage.getItem('bulletHellLeaderboard');
+        leaderboard = data ? JSON.parse(data) : [];
+      } catch (e) {
+        leaderboard = [];
+      }
+    }
+
+    function saveLeaderboard() {
+      localStorage.setItem('bulletHellLeaderboard', JSON.stringify(leaderboard));
+    }
+
+    function addToLeaderboard(name, score, wave) {
+      leaderboard.push({ name, score, wave, date: Date.now() });
+      leaderboard.sort((a, b) => b.score - a.score);
+      leaderboard = leaderboard.slice(0, MAX_LEADERBOARD_ENTRIES);
+      saveLeaderboard();
+
+      // Update high score
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('bulletHellHigh', highScore);
+      }
+    }
+
+    loadLeaderboard();
 
     // ============ SCREEN SHAKE ============
     let screenShake = { x: 0, y: 0, intensity: 0, time: 0 };
@@ -1015,6 +1457,11 @@
     }
 
     function updateMenu(dt) {
+      // Toggle leaderboard view
+      if (isDown('l') || isDown('L')) {
+        currentPage = currentPage === 'MENU' ? 'LEADERBOARD' : 'MENU';
+      }
+
       if (isDown(' ') || isDown('Enter')) {
         startGame();
       }
@@ -1024,6 +1471,17 @@
       if (isDown(' ') || isDown('Enter')) {
         startGame();
       }
+
+      // Save to leaderboard
+      if ((isDown('s') || isDown('S')) && score > 0) {
+        addToLeaderboard('PILOT', score, waveCount);
+        gameState = STATE.MENU;
+        currentPage = 'MENU';
+      }
+    }
+
+    function updatePause(dt) {
+      // Just wait, ESC will toggle back
     }
 
     function startGame() {
@@ -1037,45 +1495,162 @@
       player.x = canvas.width / 2;
       player.y = canvas.height - 80;
       powerups.length = 0;
+      minions.length = 0;
       bossIndex = 0;
+      waveCount = 1;
       startBoss();
       gameState = STATE.PLAYING;
     }
 
     function renderMenu() {
+      if (currentPage === 'LEADERBOARD') {
+        renderLeaderboard();
+        return;
+      }
+
+      // Animated title with pulsing glow
+      const time = Date.now() / 1000;
+      const pulseScale = 1 + Math.sin(time * 2) * 0.05;
+
+      ctx.save();
+      ctx.translate(canvas.width/2, canvas.height/2 - 40);
+      ctx.scale(pulseScale, pulseScale);
+      ctx.shadowBlur = 20 + Math.sin(time * 3) * 10;
+      ctx.shadowColor = '#00ffff';
       ctx.fillStyle = '#fff';
       ctx.textAlign = 'center';
       ctx.font = '30px monospace';
-      ctx.fillText('BULLET HELL', canvas.width/2, canvas.height/2 - 40);
+      ctx.fillText('BULLET HELL', 0, 0);
+      ctx.restore();
+
+      ctx.fillStyle = '#ff00ff';
+      ctx.textAlign = 'center';
       ctx.font = '16px monospace';
       ctx.fillText('BOSS RUSH', canvas.width/2, canvas.height/2 - 10);
-      ctx.fillStyle = '#00ffff';
-      ctx.fillText('PRESS SPACE TO START', canvas.width/2, canvas.height/2 + 40);
+
+      // Blinking "PRESS SPACE"
+      if (Math.floor(time * 2) % 2 === 0) {
+        ctx.fillStyle = '#00ffff';
+        ctx.font = '16px monospace';
+        ctx.fillText('PRESS SPACE TO START', canvas.width/2, canvas.height/2 + 40);
+      }
+
       ctx.fillStyle = '#888';
       ctx.font = '12px monospace';
       ctx.fillText(`HIGH SCORE: ${highScore}`, canvas.width/2, canvas.height/2 + 80);
+
+      // Show leaderboard hint
+      ctx.fillStyle = '#666';
+      ctx.fillText('PRESS L FOR LEADERBOARD', canvas.width/2, canvas.height - 30);
+      ctx.textAlign = 'left';
+    }
+
+    function renderLeaderboard() {
+      const time = Date.now() / 1000;
+
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      ctx.font = '30px monospace';
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = '#00ffff';
+      ctx.fillText('LEADERBOARD', canvas.width/2, 80);
+      ctx.shadowBlur = 0;
+
+      if (leaderboard.length === 0) {
+        ctx.fillStyle = '#888';
+        ctx.font = '16px monospace';
+        ctx.fillText('NO SCORES YET', canvas.width/2, 150);
+      } else {
+        ctx.textAlign = 'left';
+        const startX = canvas.width/2 - 150;
+        for (let i = 0; i < leaderboard.length; i++) {
+          const entry = leaderboard[i];
+          const y = 130 + i * 35;
+
+          // Rank
+          ctx.fillStyle = i === 0 ? '#ffd700' : (i === 1 ? '#c0c0c0' : (i === 2 ? '#cd7f32' : '#888'));
+          ctx.font = 'bold 18px monospace';
+          ctx.fillText(`${i + 1}.`, startX, y);
+
+          // Name
+          ctx.fillStyle = '#fff';
+          ctx.font = '16px monospace';
+          ctx.fillText(entry.name, startX + 35, y);
+
+          // Score
+          ctx.fillStyle = '#00ffff';
+          ctx.textAlign = 'right';
+          ctx.fillText(`${entry.score}`, startX + 220, y);
+
+          // Wave
+          ctx.fillStyle = '#888';
+          ctx.font = '12px monospace';
+          ctx.textAlign = 'right';
+          ctx.fillText(`W${entry.wave}`, startX + 280, y);
+          ctx.textAlign = 'left';
+        }
+      }
+
+      // Back hint
+      if (Math.floor(time * 2) % 2 === 0) {
+        ctx.fillStyle = '#00ffff';
+        ctx.textAlign = 'center';
+        ctx.font = '14px monospace';
+        ctx.fillText('PRESS L TO BACK', canvas.width/2, canvas.height - 40);
+      }
       ctx.textAlign = 'left';
     }
 
     function renderGameOver() {
+      const time = Date.now() / 1000;
+
+      // Animated background with pulse
       ctx.fillStyle = 'rgba(0,0,0,0.7)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Glitch effect on GAME OVER text
+      const glitchOffset = Math.random() > 0.9 ? (Math.random() - 0.5) * 10 : 0;
+
       ctx.fillStyle = '#ff4444';
       ctx.textAlign = 'center';
       ctx.font = '30px monospace';
-      ctx.fillText('GAME OVER', canvas.width/2, canvas.height/2 - 20);
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = '#ff0000';
+      ctx.fillText('GAME OVER', canvas.width/2 + glitchOffset, canvas.height/2 - 40);
+      ctx.shadowBlur = 0;
+
+      ctx.fillStyle = '#ff8800';
+      ctx.font = '16px monospace';
+      ctx.fillText(`REACHED WAVE ${waveCount}`, canvas.width/2, canvas.height/2 - 10);
+
+      // Score count-up animation effect
+      const displayScore = Math.min(score, Math.floor(time * 50) % (score + 100));
       ctx.fillStyle = '#fff';
       ctx.font = '20px monospace';
-      ctx.fillText(`SCORE: ${score}`, canvas.width/2, canvas.height/2 + 20);
+      ctx.fillText(`SCORE: ${displayScore}`, canvas.width/2, canvas.height/2 + 20);
+
       if (score > highScore) {
         localStorage.setItem('bulletHellHigh', score);
         highScore = score;
         ctx.fillStyle = '#00ffff';
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#00ffff';
         ctx.fillText('NEW HIGH SCORE!', canvas.width/2, canvas.height/2 + 50);
+        ctx.shadowBlur = 0;
       }
-      ctx.fillStyle = '#888';
-      ctx.font = '14px monospace';
-      ctx.fillText('PRESS SPACE TO RESTART', canvas.width/2, canvas.height/2 + 90);
+
+      // Blinking restart text
+      if (Math.floor(time * 2) % 2 === 0) {
+        ctx.fillStyle = '#888';
+        ctx.font = '14px monospace';
+        ctx.fillText('PRESS SPACE TO RESTART', canvas.width/2, canvas.height/2 + 90);
+      }
+
+      // Save to leaderboard hint
+      ctx.fillStyle = '#666';
+      ctx.font = '12px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('PRESS S TO SAVE SCORE', canvas.width/2, canvas.height/2 + 115);
       ctx.textAlign = 'left';
     }
 
@@ -1086,7 +1661,9 @@
       updatePlayer(dt);
       updateBullets(dt);
       updatePowerups(dt);
+      updateMinions(dt);
       updateBoss(dt);
+      updateMeteors(dt);
       updateParticles(dt);
       updateExplosionParticles(dt);
       updateDisplayHp(dt);
@@ -1094,6 +1671,7 @@
       updateCombo(dt);
       checkPlayerHit();
       checkBossHit();
+      checkMinionHit();
     }
 
     function render() {
@@ -1103,6 +1681,7 @@
       ctx.fillStyle = '#0a0a1a';
       ctx.fillRect(-10, -10, canvas.width + 20, canvas.height + 20);
       renderBackground();
+      renderMeteors();
 
       switch(gameState) {
         case STATE.MENU:
@@ -1114,6 +1693,7 @@
           renderParticles();
           renderBullets();
           renderPowerups();
+          renderMinions();
           if (boss.active) renderBoss();
           renderPlayer();
           renderUI();
@@ -1126,6 +1706,8 @@
           renderGameOver();
           break;
         case STATE.PAUSED:
+          renderBackground();
+          renderMeteors();
           renderParticles();
           renderBullets();
           if (boss.active) renderBoss();
@@ -1142,13 +1724,24 @@
     function renderPauseScreen() {
       ctx.fillStyle = 'rgba(0,0,0,0.5)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const time = Date.now() / 1000;
       ctx.fillStyle = '#00ffff';
       ctx.font = '40px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('PAUSED', canvas.width/2, canvas.height/2);
-      ctx.font = '16px monospace';
-      ctx.fillStyle = '#fff';
-      ctx.fillText('PRESS ESC TO RESUME', canvas.width/2, canvas.height/2 + 40);
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = '#00ffff';
+      ctx.fillText('PAUSED', canvas.width/2, canvas.height/2 - 30);
+      ctx.shadowBlur = 0;
+
+      ctx.font = '14px monospace';
+      ctx.fillStyle = '#888';
+      ctx.fillText('ARROWS/WASD: MOVE    |    ESC: RESUME', canvas.width/2, canvas.height/2 + 20);
+
+      if (Math.floor(time * 2) % 2 === 0) {
+        ctx.fillStyle = '#fff';
+        ctx.fillText('PRESS ESC TO RESUME', canvas.width/2, canvas.height/2 + 60);
+      }
       ctx.textAlign = 'left';
     }
 
