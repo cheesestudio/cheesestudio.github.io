@@ -2,7 +2,7 @@
 
 赛博朋克弹幕射击游戏 | 支持 Radmin 1~4 人联机 | 支持 DG-LAB 郊狼脉冲反馈
 
-✅ 在线玩: https://bullet-hell-game.vercel.app
+✅ 在线玩: https://cheesestudio.io
 
 ---
 
