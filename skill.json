@@ -1,0 +1,16 @@
+{
+  "name": "bullet-hell",
+  "description": "运行弹幕地狱游戏",
+  "entrypoint": "index.html",
+  "type": "web",
+  "tags": ["game", "demo", "shooter"],
+  "author": "cheesestudio",
+  "launchUrl": "https://cheesestudio.github.io/",
+  "commands": {
+    "play": {
+      "description": "启动并打开弹幕地狱游戏",
+      "action": "open",
+      "url": "https://cheesestudio.github.io/"
+    }
+  }
+}
