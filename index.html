@@ -1,25 +1,241 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bullet Hell Boss Rush</title>
+  <title>cheesestudio</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #0a0a1a;
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      image-rendering: pixelated;
     }
-    iframe {
+
+    body {
+      font-family: 'Press Start 2P', monospace;
+      background: #0f0f23;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #39ff14;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* CRT 扫描线效果 */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
-      border: none;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15),
+        rgba(0, 0, 0, 0.15) 1px,
+        transparent 1px,
+        transparent 2px
+      );
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* 屏幕闪烁效果 */
+    body::after {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(18, 16, 16, 0.1);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 101;
+      animation: flicker 0.15s infinite;
+    }
+
+    @keyframes flicker {
+      0% { opacity: 0.27861; }
+      5% { opacity: 0.34769; }
+      10% { opacity: 0.23604; }
+      15% { opacity: 0.90626; }
+      20% { opacity: 0.18128; }
+      25% { opacity: 0.83891; }
+      30% { opacity: 0.65583; }
+      35% { opacity: 0.67807; }
+      40% { opacity: 0.26559; }
+      45% { opacity: 0.84693; }
+      50% { opacity: 0.96019; }
+      55% { opacity: 0.08594; }
+      60% { opacity: 0.20313; }
+      65% { opacity: 0.71988; }
+      70% { opacity: 0.53455; }
+      75% { opacity: 0.37288; }
+      80% { opacity: 0.71428; }
+      85% { opacity: 0.70419; }
+      90% { opacity: 0.7003; }
+      95% { opacity: 0.36108; }
+      100% { opacity: 0.24387; }
+    }
+
+    .container {
+      text-align: center;
+      z-index: 10;
+      padding: 40px;
+      max-width: 600px;
+    }
+
+    .avatar {
+      width: 128px;
+      height: 128px;
+      border: 4px solid #39ff14;
+      margin: 0 auto 32px;
+      display: block;
+      image-rendering: pixelated;
+      box-shadow:
+        0 0 0 4px #0f0f23,
+        0 0 0 8px #39ff14,
+        0 0 30px rgba(57, 255, 20, 0.5);
+      animation: avatarGlow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes avatarGlow {
+      from { box-shadow: 0 0 0 4px #0f0f23, 0 0 0 8px #39ff14, 0 0 20px rgba(57, 255, 20, 0.4); }
+      to { box-shadow: 0 0 0 4px #0f0f23, 0 0 0 8px #39ff14, 0 0 50px rgba(57, 255, 20, 0.8); }
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 12px;
+      text-shadow: 4px 4px 0 #1a1a1a;
+      animation: typing 2s steps(12);
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    @keyframes typing {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+
+    .subtext {
+      font-size: 10px;
+      color: #ff6ec7;
+      margin-bottom: 32px;
+      opacity: 0;
+      animation: fadeIn 0.5s 2.2s forwards;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    .contact {
+      font-size: 8px;
+      color: #00ffff;
+      margin-bottom: 48px;
+      line-height: 2;
+      opacity: 0;
+      animation: fadeIn 0.5s 2.7s forwards;
+    }
+
+    .game-button {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 14px;
+      padding: 16px 32px;
+      background: #1a1a1a;
+      border: 4px solid #39ff14;
+      color: #39ff14;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.1s;
+      opacity: 0;
+      animation: fadeIn 0.5s 3.2s forwards;
+    }
+
+    .game-button:hover {
+      background: #39ff14;
+      color: #0f0f23;
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(57, 255, 20, 0.7);
+    }
+
+    .game-button:active {
+      transform: scale(0.98);
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      height: 16px;
+      background: #39ff14;
+      animation: blink 0.7s infinite;
+      margin-left: 4px;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    .scanline {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: rgba(57, 255, 20, 0.3);
+      opacity: 0.7;
+      z-index: 99;
+      animation: scanline 6s linear infinite;
+    }
+
+    @keyframes scanline {
+      0% { top: 0; }
+      100% { top: 100%; }
+    }
+
+    .footer {
+      position: fixed;
+      bottom: 16px;
+      left: 0;
+      right: 0;
+      font-size: 7px;
+      color: #666;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <iframe src="bullet-hell.html"></iframe>
+  <div class="scanline"></div>
+
+  <div class="container">
+    <img class="avatar" src="https://github.com/cheesestudio.png" alt="cheesestudio">
+
+    <h1>cheesestudio <span class="cursor"></span></h1>
+
+    <div class="subtext">
+      >> GAME DEVELOPER <<
+    </div>
+
+    <div class="contact">
+      GitHub: @cheesestudio<br>
+      QQ: 2190038793
+    </div>
+
+    <button class="game-button" onclick="window.location.href='bullet-hell.html'">
+      ▶ 进入弹幕地狱
+    </button>
+  </div>
+
+  <div class="footer">
+    SYSTEM READY | PRESS START
+  </div>
 </body>
 </html>
