@@ -3217,12 +3217,6 @@
         selectedSetting = (selectedSetting - 1 + 7) % 7;
       }
 
-      // Reset pressed flags on key release
-      if (!isDown('ArrowDown')) keys['ArrowDown_pressed'] = false;
-      if (!isDown('ArrowUp')) keys['ArrowUp_pressed'] = false;
-      if (!isDown('ArrowLeft')) keys['ArrowLeft_pressed'] = false;
-      if (!isDown('ArrowRight')) keys['ArrowRight_pressed'] = false;
-
       // Change values
       if (isDown('ArrowLeft') || isDown('ArrowRight')) {
         switch(selectedSetting) {
@@ -3232,8 +3226,18 @@
           case 3: crtEffectEnabled = !crtEffectEnabled; break;
           case 4: soundEnabled = !soundEnabled; break;
           case 5: musicEnabled = !musicEnabled; break;
+          case 6: coyoteEnabled = !coyoteEnabled; break;
+          case 7:
+            coyoteIntensity = Math.max(0, Math.min(1, coyoteIntensity + (isDown('ArrowRight') ? 0.05 : -0.05)));
+            break;
         }
       }
+
+      // Reset pressed flags on key release - AFTER processing input
+      if (!isDown('ArrowDown')) keys['ArrowDown_pressed'] = false;
+      if (!isDown('ArrowUp')) keys['ArrowUp_pressed'] = false;
+      if (!isDown('ArrowLeft')) keys['ArrowLeft_pressed'] = false;
+      if (!isDown('ArrowRight')) keys['ArrowRight_pressed'] = false;
     }
 
     function startGame() {
@@ -3302,9 +3306,7 @@
       ctx.fillStyle = '#888';
       ctx.font = '11px monospace';
       ctx.fillText('  ARROWS  Move', tipX, tipY); tipY += 18;
-      ctx.fillText('  SPACE   Shoot', tipX, tipY); tipY += 18;
-      ctx.fillText('  B       Bomb', tipX, tipY); tipY += 18;
-      ctx.fillText('  SHIFT   Focus', tipX, tipY); tipY += 18;
+      ctx.fillText('  SPACE   Bomb', tipX, tipY); tipY += 18;
       ctx.fillText('  ESC     Pause', tipX, tipY);
 
       // Center bottom hint
@@ -3372,7 +3374,9 @@
         { name: 'Particles', value: particlesEnabled ? 'ON' : 'OFF' },
         { name: 'CRT Effect', value: crtEffectEnabled ? 'ON' : 'OFF' },
         { name: 'Sound Effects', value: soundEnabled ? 'ON' : 'OFF' },
-        { name: 'Music', value: musicEnabled ? 'ON' : 'OFF' }
+        { name: 'Music', value: musicEnabled ? 'ON' : 'OFF' },
+        { name: 'COYOTE SOCKET', value: coyoteEnabled ? 'ON' : 'OFF' },
+        { name: 'COYOTE INTENSITY', value: `${Math.round(coyoteIntensity * 100)}%` }
       ];
 
       for (let i = 0; i < items.length; i++) {
@@ -3664,7 +3668,7 @@
     let coyoteConnected = false;
     let coyoteEnabled = false;
     let coyoteCooldown = 0;
-    let coyoteIntensity = 0.3; // Global intensity multiplier 0-1
+    let coyoteIntensity = 1.0; // Global intensity multiplier 0-1  DEFAULT MAX STRENGTH
     let coyoteQrCodeData = "";
     let coyoteShowQr = false;
 
