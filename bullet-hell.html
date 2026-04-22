@@ -2350,7 +2350,7 @@
 
       // Coyote Time
       ctx.fillStyle = '#ffff00';
-      ctx.fillText(' COYOTE TIME', 8, 115);
+      ctx.fillText(' DG-LAB TIME', 8, 115);
       ctx.fillStyle = '#666';
       ctx.fillText(' 0.08s grace period', 8, 128);
       ctx.fillText(' after near miss', 8, 140);
@@ -3200,9 +3200,6 @@
       if (isDown('s') || isDown('S')) {
         gameState = STATE.SETTINGS;
       }
-      if (isDown('q') || isDown('Q')) {
-        gameState = STATE.MENU;
-      }
     }
 
     function updateSettings(dt) {
@@ -3296,7 +3293,7 @@
       // Left sidebar game tips - clean vertical layout
       ctx.textAlign = 'left';
       const tipX = 24;
-      let tipY = 75;
+      let tipY = 80;
 
       ctx.fillStyle = '#00ffff';
       ctx.font = '12px monospace';
@@ -3308,23 +3305,7 @@
       ctx.fillText('  SPACE   Shoot', tipX, tipY); tipY += 18;
       ctx.fillText('  B       Bomb', tipX, tipY); tipY += 18;
       ctx.fillText('  SHIFT   Focus', tipX, tipY); tipY += 18;
-      ctx.fillText('  ESC     Pause', tipX, tipY); tipY += 30;
-
-      ctx.fillStyle = '#ff00ff';
-      ctx.font = '12px monospace';
-      ctx.fillText('▶ TIPS', tipX, tipY); tipY += 24;
-
-      ctx.fillStyle = '#888';
-      ctx.font = '11px monospace';
-      ctx.fillText('  Graze bullets +1 score', tipX, tipY); tipY += 18;
-      ctx.fillText('  Collect powerups', tipX, tipY); tipY += 18;
-      ctx.fillText('  Bomb clears screen', tipX, tipY); tipY += 32;
-
-      ctx.fillStyle = '#444';
-      ctx.font = '11px monospace';
-      ctx.fillText('HIGH SCORE', tipX, tipY); tipY += 16;
-      ctx.fillStyle = '#fff';
-      ctx.fillText(`${highScore}`, tipX, tipY);
+      ctx.fillText('  ESC     Pause', tipX, tipY);
 
       // Center bottom hint
       ctx.textAlign = 'center';
@@ -3357,7 +3338,6 @@
       ctx.fillText('[SPACE] RESUME', canvas.width/2, canvas.height/2);
       ctx.fillText('[R] RESTART GAME', canvas.width/2, canvas.height/2 + 30);
       ctx.fillText('[S] SETTINGS', canvas.width/2, canvas.height/2 + 60);
-      ctx.fillText('[Q] QUIT TO MENU', canvas.width/2, canvas.height/2 + 90);
 
       ctx.fillStyle = '#666';
       ctx.font = '12px monospace';
@@ -3678,7 +3658,7 @@
     }
 
     // =====================================================
-    // DG-LAB COYOTE SOCKET INTEGRATION
+    // DG-LAB DG-LAB SOCKET INTEGRATION
     // =====================================================
     let coyoteWs = null;
     let coyoteConnected = false;
@@ -3688,7 +3668,7 @@
     let coyoteQrCodeData = "";
     let coyoteShowQr = false;
 
-    const COYOTE_COOLDOWN = 0.03; // 30ms minimum between pulses
+    const DG-LAB_COOLDOWN = 0.03; // 30ms minimum between pulses
 
     // Coyote QR Code generator for direct connection
     function generateCoyoteQrCode() {
@@ -3738,7 +3718,7 @@
       switch(eventType) {
         case 'playerHit':
           msg = "strength-1+1+15 strength-2+1+8";
-          coyoteCooldown = COYOTE_COOLDOWN;
+          coyoteCooldown = DG-LAB_COOLDOWN;
           break;
         case 'powerup':
           msg = "strength-1+1+5 strength-2+1+3";
