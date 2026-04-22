@@ -35,7 +35,7 @@
     const ctx = canvas.getContext('2d');
 
     // Game states
-    const STATE = { MENU: 0, PLAYING: 1, TRANSITION: 2, GAMEOVER: 3, PAUSED: 4, SETTINGS: 5 };
+    const STATE = { MENU: 0, PLAYING: 1, TRANSITION: 2, GAMEOVER: 3, PAUSED: 4, SETTINGS: 5, LOBBY: 6 };
     let gameState = STATE.MENU;
     let lastTime = 0;
     let gameTime = 0;
@@ -54,6 +54,21 @@
     let bossHealthBar = 0;
     let bossMaxHealth = 100;
 
+    // Network multiplayer
+    const NET_PORT = 7;
+    const MAX_PLAYERS = 4;
+    const network = {
+      mode: 'offline', // offline / host / client
+      connected: false,
+      peers: [],
+      localPlayerId: 0,
+      tick: 0,
+      confirmedTicks: 0,
+      inputQueue: new Map(),
+      readyPlayers: new Set(),
+      ws: null
+    };
+
     function gameLoop(timestamp) {
       const dt = (timestamp - lastTime) / 1000;
       lastTime = timestamp;
@@ -62,11 +77,18 @@
 
       // Update
       switch(gameState) {
-        case STATE.PLAYING: update(clampedDt); break;
+        case STATE.PLAYING:
+          // Lockstep sync: only advance when we have all player inputs for this tick
+          if (network.mode === 'offline' || network.tick <= network.confirmedTicks) {
+            update(clampedDt);
+            network.tick++;
+          }
+          break;
         case STATE.MENU: updateMenu(clampedDt); break;
         case STATE.GAMEOVER: updateGameOver(clampedDt); break;
         case STATE.PAUSED: updatePause(clampedDt); break;
         case STATE.SETTINGS: updateSettings(clampedDt); break;
+        case STATE.LOBBY: updateLobby(clampedDt); break;
       }
 
       // Toggle pause
@@ -2299,11 +2321,62 @@
     function renderUI() {
       const time = Date.now() / 1000;
 
-      // === PLAYER STATUS AREA (Left side) ===
+      // === LEFT SIDEBAR PANEL ===
+      ctx.fillStyle = 'rgba(10, 10, 30, 0.7)';
+      ctx.fillRect(0, 0, 100, canvas.height);
+      ctx.strokeStyle = '#222255';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(100, 0);
+      ctx.lineTo(100, canvas.height);
+      ctx.stroke();
+
+      ctx.textAlign = 'left';
+      ctx.font = '10px monospace';
+
+      // Controls section
+      ctx.fillStyle = '#00ffff';
+      ctx.fillText(' CONTROLS', 8, 15);
+      ctx.fillStyle = '#888';
+      ctx.fillText(' ↑↓←→  MOVE', 8, 32);
+      ctx.fillText(' Z  FIRE', 8, 46);
+      ctx.fillText(' X  BOMB', 8, 60);
+      ctx.fillText(' SHIFT  FOCUS', 8, 74);
+      ctx.fillText(' ESC  PAUSE', 8, 88);
+
+      // Coyote Time
+      ctx.fillStyle = '#ffff00';
+      ctx.fillText(' COYOTE TIME', 8, 115);
+      ctx.fillStyle = '#666';
+      ctx.fillText(' 0.08s grace period', 8, 128);
+      ctx.fillText(' after near miss', 8, 140);
+
+      // Multiplayer
+      ctx.fillStyle = '#00ff00';
+      ctx.fillText(' MULTIPLAYER', 8, 168);
+      ctx.fillStyle = '#666';
+      ctx.fillText(' 2P LOCAL CO-OP', 8, 181);
+      ctx.fillText(' P2: WASD + F/G', 8, 193);
+
+      // Boss Phase
+      if (boss.active) {
+        ctx.fillStyle = '#ff00ff';
+        ctx.fillText(' BOSS PHASE', 8, 225);
+        ctx.fillStyle = '#fff';
+        ctx.font = '12px monospace';
+        ctx.fillText(` ${bossIndex+1} / 3`, 8, 242);
+        ctx.fillText(` FORM ${boss.phase+1} / 3`, 8, 258);
+        ctx.font = '10px monospace';
+      }
+
+      ctx.fillStyle = '#333';
+      ctx.fillText('──────────', 5, 280);
+
+      // === PLAYER STATUS AREA ===
       // Lives with animation
       for (let i = 0; i < player.lives; i++) {
         ctx.save();
-        const heartX = 10 + i * 24;
+        const heartX = 110 + i * 24;
         const heartY = 30;
         // Pulse effect
         const pulse = 1 + Math.sin(time * 4 + i) * 0.1;

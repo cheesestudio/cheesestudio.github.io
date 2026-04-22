@@ -10,12 +10,24 @@
       "Edit(~/.claude/skills/omc-teams/**)",
       "Bash(git add *)",
       "Bash(git commit -m 'Fix audit issues: clamped dt, safe timers, bullet limit *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "WebSearch",
+      "Bash(git remote *)",
+      "Bash(git commit -m 'Add Claude skill configuration *)",
+      "Bash(vercel deploy *)",
+      "Bash(git commit -m 'Add pixel retro style homepage *)",
+      "Bash(git commit -m 'Update homepage: cyberpunk background, larger fonts, add wechat *)",
+      "Read(//c/Users/ghr13/.claude/skills/browser/**)",
+      "Bash(node scripts/start.js)",
+      "Bash(node scripts/nav.js \"file:///C:/Users/ghr13/Saved%20Games/bullet-hell-game/bullet-hell.html\")",
+      "Bash(node scripts/screenshot.js)",
+      "Bash(unzip -qo ~/.claude/skills/browser/browser.zip -d ~/.claude/skills/browser/)"
     ],
     "additionalDirectories": [
       "C:\\Users\\21900\\.claude\\skills",
       "C:\\Users\\21900\\.claude\\skills_temp",
-      "C:\\Users\\21900\\.claude\\skills\\web-design-guidelines"
+      "C:\\Users\\21900\\.claude\\skills\\web-design-guidelines",
+      "C:\\Users\\ghr13\\.claude\\plans"
     ]
   }
 }
