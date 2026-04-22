@@ -3213,12 +3213,18 @@
       // Navigation
       if (isDown('ArrowDown') && !keys['ArrowDown_pressed']) {
         keys['ArrowDown_pressed'] = true;
-        selectedSetting = (selectedSetting + 1) % 6;
+        selectedSetting = (selectedSetting + 1) % 7;
       }
       if (isDown('ArrowUp') && !keys['ArrowUp_pressed']) {
         keys['ArrowUp_pressed'] = true;
-        selectedSetting = (selectedSetting - 1 + 6) % 6;
+        selectedSetting = (selectedSetting - 1 + 7) % 7;
       }
+
+      // Reset pressed flags on key release
+      if (!isDown('ArrowDown')) keys['ArrowDown_pressed'] = false;
+      if (!isDown('ArrowUp')) keys['ArrowUp_pressed'] = false;
+      if (!isDown('ArrowLeft')) keys['ArrowLeft_pressed'] = false;
+      if (!isDown('ArrowRight')) keys['ArrowRight_pressed'] = false;
 
       // Change values
       if (isDown('ArrowLeft') || isDown('ArrowRight')) {
@@ -3679,8 +3685,51 @@
     let coyoteEnabled = false;
     let coyoteCooldown = 0;
     let coyoteIntensity = 0.3; // Global intensity multiplier 0-1
+    let coyoteQrCodeData = "";
+    let coyoteShowQr = false;
 
     const COYOTE_COOLDOWN = 0.03; // 30ms minimum between pulses
+
+    // Coyote QR Code generator for direct connection
+    function generateCoyoteQrCode() {
+      // Generate connection string for DG-LAB App
+      const localIp = window.location.hostname || '127.0.0.1';
+      coyoteQrCodeData = `ws://${localIp}:8080`;
+
+      // Draw QR Code directly on canvas
+      if (!window.qrcode) {
+        // Load QR generator dynamically
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js';
+        document.head.appendChild(script);
+      }
+    }
+
+    function renderCoyoteQr() {
+      if (!coyoteShowQr || !window.qrcode) return;
+
+      // Draw background panel
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+      ctx.fillRect(canvas.width/2 - 120, canvas.height/2 - 140, 240, 280);
+
+      ctx.fillStyle = '#000';
+      ctx.font = '14px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('扫描连接郊狼', canvas.width/2, canvas.height/2 - 120);
+
+      // QR Code will be rendered here by the library
+      if (window.qrcode && coyoteQrCodeData) {
+        qrcode.toCanvas(canvas, canvas.width/2 - 100, canvas.height/2 - 100, coyoteQrCodeData, {
+          width: 200,
+          margin: 2
+        });
+      }
+
+      ctx.fillStyle = '#666';
+      ctx.font = '11px monospace';
+      ctx.fillText('在 DG-LAB APP 中扫描此二维码', canvas.width/2, canvas.height/2 + 120);
+      ctx.fillText('[ESC] 关闭', canvas.width/2, canvas.height/2 + 140);
+    }
 
     function coyoteTrigger(eventType) {
       if (!coyoteEnabled || !coyoteConnected || coyoteCooldown > 0) return;
