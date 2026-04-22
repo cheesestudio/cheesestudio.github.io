@@ -18,6 +18,13 @@
     canvas {
       border: 2px solid #1a1a3a;
       box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+      max-width: 100vw;
+      max-height: 100vh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
     }
   </style>
 </head>
@@ -28,11 +35,24 @@
     const ctx = canvas.getContext('2d');
 
     // Game states
-    const STATE = { MENU: 0, PLAYING: 1, TRANSITION: 2, GAMEOVER: 3, PAUSED: 4 };
+    const STATE = { MENU: 0, PLAYING: 1, TRANSITION: 2, GAMEOVER: 3, PAUSED: 4, SETTINGS: 5 };
     let gameState = STATE.MENU;
     let lastTime = 0;
     let gameTime = 0;
     let graze = 0;
+
+    // Settings
+    let difficulty = 1; // 0=EASY, 1=NORMAL, 2=HARD
+    let selectedSetting = 0;
+    let screenShakeEnabled = true;
+    let particlesEnabled = true;
+    let crtEffectEnabled = true;
+    let soundEnabled = true;
+    let musicEnabled = true;
+
+    let showHud = true;
+    let bossHealthBar = 0;
+    let bossMaxHealth = 100;
 
     function gameLoop(timestamp) {
       const dt = (timestamp - lastTime) / 1000;
@@ -46,6 +66,7 @@
         case STATE.MENU: updateMenu(clampedDt); break;
         case STATE.GAMEOVER: updateGameOver(clampedDt); break;
         case STATE.PAUSED: updatePause(clampedDt); break;
+        case STATE.SETTINGS: updateSettings(clampedDt); break;
       }
 
       // Toggle pause
@@ -728,6 +749,7 @@
       player.invincible = 2;
       spawnExplosion(player.x, player.y, '#ffffff', 20);
       triggerScreenShake(4, 0.1);
+      coyoteTrigger('playerHit');
 
       // Clear all enemy bullets on death
       bullets.length = 0;
@@ -736,6 +758,7 @@
       if (player.lives <= 0) {
         gameState = STATE.GAMEOVER;
         spawnExplosion(player.x, player.y, '#00ffff', 80);
+        coyoteTrigger('gameOver');
       }
     }
 
@@ -3090,7 +3113,46 @@
     }
 
     function updatePause(dt) {
-      // Just wait, ESC will toggle back
+      if (isDown(' ') || isDown('Escape')) {
+        gameState = STATE.PLAYING;
+      }
+      if (isDown('r') || isDown('R')) {
+        startGame();
+      }
+      if (isDown('s') || isDown('S')) {
+        gameState = STATE.SETTINGS;
+      }
+      if (isDown('q') || isDown('Q')) {
+        gameState = STATE.MENU;
+      }
+    }
+
+    function updateSettings(dt) {
+      if (isDown('Escape')) {
+        gameState = STATE.PAUSED;
+      }
+
+      // Navigation
+      if (isDown('ArrowDown') && !keys['ArrowDown_pressed']) {
+        keys['ArrowDown_pressed'] = true;
+        selectedSetting = (selectedSetting + 1) % 6;
+      }
+      if (isDown('ArrowUp') && !keys['ArrowUp_pressed']) {
+        keys['ArrowUp_pressed'] = true;
+        selectedSetting = (selectedSetting - 1 + 6) % 6;
+      }
+
+      // Change values
+      if (isDown('ArrowLeft') || isDown('ArrowRight')) {
+        switch(selectedSetting) {
+          case 0: difficulty = (difficulty + (isDown('ArrowRight') ? 1 : -1) + 3) % 3; break;
+          case 1: screenShakeEnabled = !screenShakeEnabled; break;
+          case 2: particlesEnabled = !particlesEnabled; break;
+          case 3: crtEffectEnabled = !crtEffectEnabled; break;
+          case 4: soundEnabled = !soundEnabled; break;
+          case 5: musicEnabled = !musicEnabled; break;
+        }
+      }
     }
 
     function startGame() {
@@ -3155,6 +3217,83 @@
       ctx.fillStyle = '#666';
       ctx.fillText('PRESS L FOR LEADERBOARD', canvas.width/2, canvas.height - 30);
       ctx.textAlign = 'left';
+    }
+
+    function renderPauseMenu() {
+      const time = Date.now() / 1000;
+
+      // Dark overlay
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.save();
+      ctx.translate(canvas.width/2, canvas.height/2 - 60);
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = '#ff00ff';
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      ctx.font = '32px monospace';
+      ctx.fillText('PAUSED', 0, 0);
+      ctx.restore();
+
+      ctx.fillStyle = '#00ffff';
+      ctx.font = '16px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('[SPACE] RESUME', canvas.width/2, canvas.height/2);
+      ctx.fillText('[R] RESTART GAME', canvas.width/2, canvas.height/2 + 30);
+      ctx.fillText('[S] SETTINGS', canvas.width/2, canvas.height/2 + 60);
+      ctx.fillText('[Q] QUIT TO MENU', canvas.width/2, canvas.height/2 + 90);
+
+      ctx.fillStyle = '#666';
+      ctx.font = '12px monospace';
+      ctx.fillText(`SCORE: ${score} | WAVE: ${waveCount} | TIME: ${Math.floor(gameTime)}s`, canvas.width/2, canvas.height - 30);
+    }
+
+    function renderSettings() {
+      const time = Date.now() / 1000;
+
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.save();
+      ctx.translate(canvas.width/2, 60);
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = '#00ffff';
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      ctx.font = '28px monospace';
+      ctx.fillText('SETTINGS', 0, 0);
+      ctx.restore();
+
+      ctx.fillStyle = '#fff';
+      ctx.font = '16px monospace';
+      ctx.textAlign = 'left';
+      const startX = canvas.width/2 - 200;
+
+      // Settings items
+      const items = [
+        { name: 'Difficulty', value: ['EASY', 'NORMAL', 'HARD'][difficulty] },
+        { name: 'Screen Shake', value: screenShakeEnabled ? 'ON' : 'OFF' },
+        { name: 'Particles', value: particlesEnabled ? 'ON' : 'OFF' },
+        { name: 'CRT Effect', value: crtEffectEnabled ? 'ON' : 'OFF' },
+        { name: 'Sound Effects', value: soundEnabled ? 'ON' : 'OFF' },
+        { name: 'Music', value: musicEnabled ? 'ON' : 'OFF' }
+      ];
+
+      for (let i = 0; i < items.length; i++) {
+        const y = 120 + i * 45;
+        ctx.fillStyle = '#fff';
+        ctx.fillText(items[i].name, startX, y);
+        ctx.fillStyle = selectedSetting === i ? '#00ffff' : '#888';
+        ctx.textAlign = 'right';
+        ctx.fillText(`[${items[i].value}]`, startX + 400, y);
+        ctx.textAlign = 'left';
+      }
+
+      ctx.fillStyle = '#666';
+      ctx.font = '12px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('[↑/↓] SELECT  [←/→] CHANGE  [ESC] BACK', canvas.width/2, canvas.height - 40);
     }
 
     function renderLeaderboard() {
@@ -3263,6 +3402,17 @@
       ctx.font = '12px monospace';
       ctx.textAlign = 'center';
       ctx.fillText('PRESS S TO SAVE SCORE', canvas.width/2, canvas.height/2 + 115);
+
+      // Contact info
+      ctx.fillStyle = '#555';
+      ctx.font = '13px monospace';
+      ctx.fillText('QQ: 2190038793  |  WX: cheesemost', canvas.width/2, canvas.height/2 + 150);
+
+      // Github project link
+      ctx.fillStyle = '#444';
+      ctx.font = '12px monospace';
+      ctx.fillText('github.com/cheesestudio/bullet-hell-game', canvas.width/2, canvas.height/2 + 170);
+
       ctx.textAlign = 'left';
     }
 
@@ -3345,7 +3495,10 @@
           renderUI();
           renderVignette();
           renderCombo();
-          renderPauseScreen();
+          renderPauseMenu();
+          break;
+        case STATE.SETTINGS:
+          renderSettings();
           break;
       }
 
@@ -3409,7 +3562,75 @@
       }
     }
 
+    // =====================================================
+    // DG-LAB COYOTE SOCKET INTEGRATION
+    // =====================================================
+    let coyoteWs = null;
+    let coyoteConnected = false;
+    let coyoteEnabled = false;
+    let coyoteCooldown = 0;
+    let coyoteIntensity = 0.3; // Global intensity multiplier 0-1
+
+    const COYOTE_COOLDOWN = 0.03; // 30ms minimum between pulses
+
+    function coyoteTrigger(eventType) {
+      if (!coyoteEnabled || !coyoteConnected || coyoteCooldown > 0) return;
+
+      let msg;
+      switch(eventType) {
+        case 'playerHit':
+          msg = "strength-1+1+15 strength-2+1+8";
+          coyoteCooldown = COYOTE_COOLDOWN;
+          break;
+        case 'powerup':
+          msg = "strength-1+1+5 strength-2+1+3";
+          coyoteCooldown = 0.15;
+          break;
+        case 'bossWarning':
+          msg = "strength-1+1+10 strength-2+1+7";
+          coyoteCooldown = 0.12;
+          break;
+        case 'gameOver':
+          msg = "strength-1+2+12 strength-2+2+8";
+          coyoteCooldown = 0.25;
+          break;
+      }
+
+      if (coyoteWs && coyoteWs.readyState === 1) {
+        coyoteWs.send(JSON.stringify({
+          type: 4,
+          message: msg,
+          clientId: "game-client",
+          targetId: ""
+        }));
+      }
+    }
+
+    function coyoteUpdate(dt) {
+      if (coyoteCooldown > 0) {
+        coyoteCooldown -= dt;
+      }
+    }
+
+    // Hook into game loop
+    const originalGameLoop = gameLoop;
+    gameLoop = function(dt) {
+      coyoteUpdate(dt);
+      originalGameLoop(dt);
+    }
+
     requestAnimationFrame(gameLoop);
+
+    // Auto resize handling
+    function handleResize() {
+      // Force browser to recalculate canvas layout
+      canvas.style.display = 'none';
+      canvas.offsetHeight; // Trigger reflow
+      canvas.style.display = 'block';
+    }
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
   </script>
 </body>
 </html>
