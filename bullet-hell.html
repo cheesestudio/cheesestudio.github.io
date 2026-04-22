@@ -3668,7 +3668,7 @@
     let coyoteQrCodeData = "";
     let coyoteShowQr = false;
 
-    const DG-LAB_COOLDOWN = 0.03; // 30ms minimum between pulses
+    const COYOTE_COOLDOWN = 0.03; // 30ms minimum between pulses
 
     // Coyote QR Code generator for direct connection
     function generateCoyoteQrCode() {
@@ -3718,7 +3718,7 @@
       switch(eventType) {
         case 'playerHit':
           msg = "strength-1+1+15 strength-2+1+8";
-          coyoteCooldown = DG-LAB_COOLDOWN;
+          coyoteCooldown = COYOTE_COOLDOWN;
           break;
         case 'powerup':
           msg = "strength-1+1+5 strength-2+1+3";
@@ -3729,8 +3729,25 @@
           coyoteCooldown = 0.12;
           break;
         case 'gameOver':
-          msg = "strength-1+2+12 strength-2+2+8";
-          coyoteCooldown = 0.25;
+          // 游戏结束波形组合：先交叉10秒 然后同时全输出
+          // 第一阶段：A/B交替交叉
+          for(let i = 0; i < 10; i++) {
+            setTimeout(() => {
+              if(coyoteWs && coyoteWs.readyState === 1) {
+                coyoteWs.send(JSON.stringify({ type: 3, channel: i%2 === 0 ? 1 : 2, strength: 80, clientId: "", targetId: "" }));
+                coyoteWs.send(JSON.stringify({ type: 3, channel: i%2 === 0 ? 2 : 1, strength: 0, clientId: "", targetId: "" }));
+              }
+            }, i * 350);
+          }
+          // 第二阶段：10秒后 两个通道同时全输出最大值
+          setTimeout(() => {
+            if(coyoteWs && coyoteWs.readyState === 1) {
+              coyoteWs.send(JSON.stringify({ type: 3, channel: 1, strength: 200, clientId: "", targetId: "" }));
+              coyoteWs.send(JSON.stringify({ type: 3, channel: 2, strength: 200, clientId: "", targetId: "" }));
+            }
+          }, 10 * 350);
+
+          coyoteCooldown = 10;
           break;
       }
 

@@ -22,7 +22,9 @@
       "Bash(node scripts/nav.js \"file:///C:/Users/ghr13/Saved%20Games/bullet-hell-game/bullet-hell.html\")",
       "Bash(node scripts/screenshot.js)",
       "Bash(unzip -qo ~/.claude/skills/browser/browser.zip -d ~/.claude/skills/browser/)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(npx serve *)",
+      "Bash(vercel whoami *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\21900\\.claude\\skills",
