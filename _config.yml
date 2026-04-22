@@ -1,0 +1,9 @@
+theme: jekyll-theme-minimal
+permalink: /:title/
+
+defaults:
+  -
+    scope:
+      path: ""
+    values:
+      permalink: /bullet-hell.html
