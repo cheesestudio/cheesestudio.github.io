@@ -25,7 +25,8 @@
       "Bash(git commit *)",
       "Bash(npx serve *)",
       "Bash(vercel whoami *)",
-      "Bash(git pull *)"
+      "Bash(git pull *)",
+      "Bash(git clone *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\21900\\.claude\\skills",
