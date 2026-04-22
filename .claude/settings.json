@@ -24,7 +24,8 @@
       "Bash(unzip -qo ~/.claude/skills/browser/browser.zip -d ~/.claude/skills/browser/)",
       "Bash(git commit *)",
       "Bash(npx serve *)",
-      "Bash(vercel whoami *)"
+      "Bash(vercel whoami *)",
+      "Bash(git pull *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\21900\\.claude\\skills",
