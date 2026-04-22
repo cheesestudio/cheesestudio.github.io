@@ -79,7 +79,7 @@
       switch(gameState) {
         case STATE.PLAYING:
           // Lockstep sync: only advance when we have all player inputs for this tick
-          if (network.mode === 'offline' || network.tick <= network.confirmedTicks) {
+          if (network.mode === 'offline' || network.confirmedTicks >= network.tick) {
             update(clampedDt);
             network.tick++;
           }
@@ -99,6 +99,10 @@
         } else if (gameState === STATE.PAUSED) {
           gameState = STATE.PLAYING;
         }
+      }
+      // Reset pressed flag on key release
+      if (!keys['Escape']) {
+        keys['Escape_pressed'] = false;
       }
 
       // Developer mode: K key toggle invincible
@@ -3186,7 +3190,8 @@
     }
 
     function updatePause(dt) {
-      if (isDown(' ') || isDown('Escape')) {
+      if (isDown(' ') && !keys[' ']) {
+        keys[' '] = true;
         gameState = STATE.PLAYING;
       }
       if (isDown('r') || isDown('R')) {
@@ -3282,12 +3287,43 @@
         ctx.fillText('PRESS SPACE TO START', canvas.width/2, canvas.height/2 + 40);
       }
 
-      ctx.fillStyle = '#888';
-      ctx.font = '12px monospace';
-      ctx.fillText(`HIGH SCORE: ${highScore}`, canvas.width/2, canvas.height/2 + 80);
+      // Left sidebar game tips - clean vertical layout
+      ctx.textAlign = 'left';
+      const tipX = 24;
+      let tipY = 75;
 
-      // Show leaderboard hint
+      ctx.fillStyle = '#00ffff';
+      ctx.font = '12px monospace';
+      ctx.fillText('▶ CONTROLS', tipX, tipY); tipY += 24;
+
+      ctx.fillStyle = '#888';
+      ctx.font = '11px monospace';
+      ctx.fillText('  ARROWS  Move', tipX, tipY); tipY += 18;
+      ctx.fillText('  SPACE   Shoot', tipX, tipY); tipY += 18;
+      ctx.fillText('  B       Bomb', tipX, tipY); tipY += 18;
+      ctx.fillText('  SHIFT   Focus', tipX, tipY); tipY += 18;
+      ctx.fillText('  ESC     Pause', tipX, tipY); tipY += 30;
+
+      ctx.fillStyle = '#ff00ff';
+      ctx.font = '12px monospace';
+      ctx.fillText('▶ TIPS', tipX, tipY); tipY += 24;
+
+      ctx.fillStyle = '#888';
+      ctx.font = '11px monospace';
+      ctx.fillText('  Graze bullets +1 score', tipX, tipY); tipY += 18;
+      ctx.fillText('  Collect powerups', tipX, tipY); tipY += 18;
+      ctx.fillText('  Bomb clears screen', tipX, tipY); tipY += 32;
+
+      ctx.fillStyle = '#444';
+      ctx.font = '11px monospace';
+      ctx.fillText('HIGH SCORE', tipX, tipY); tipY += 16;
+      ctx.fillStyle = '#fff';
+      ctx.fillText(`${highScore}`, tipX, tipY);
+
+      // Center bottom hint
+      ctx.textAlign = 'center';
       ctx.fillStyle = '#666';
+      ctx.font = '12px monospace';
       ctx.fillText('PRESS L FOR LEADERBOARD', canvas.width/2, canvas.height - 30);
       ctx.textAlign = 'left';
     }

@@ -14,6 +14,10 @@ const server = net.createServer();
 let clients = new Set();
 
 wss.on('connection', ws => {
+  if (clients.size >= 4) {
+    ws.close(1013, 'Maximum 4 players supported');
+    return;
+  }
   clients.add(ws);
   ws.on('message', data => clients.forEach(c => c !== ws && c.send(data)));
   ws.on('close', () => clients.delete(ws));
