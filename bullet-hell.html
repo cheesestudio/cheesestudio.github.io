@@ -2607,56 +2607,121 @@
     function renderUI() {
       const time = Date.now() / 1000;
 
-      // === LEFT SIDEBAR PANEL ===
-      ctx.fillStyle = 'rgba(10, 10, 30, 0.7)';
-      ctx.fillRect(0, 0, 100, canvas.height);
-      ctx.strokeStyle = '#222255';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(100, 0);
-      ctx.lineTo(100, canvas.height);
-      ctx.stroke();
-
+      // === SCORE (Top Left) ===
+      ctx.save();
       ctx.textAlign = 'left';
-      ctx.font = '10px monospace';
-
-      // Controls section
       ctx.fillStyle = '#00ffff';
-      ctx.fillText(' CONTROLS', 8, 15);
-      ctx.fillStyle = '#888';
-      ctx.fillText(' ↑↓←→  MOVE', 8, 32);
-      ctx.fillText(' Z  FIRE', 8, 46);
-      ctx.fillText(' X  BOMB', 8, 60);
-      ctx.fillText(' SHIFT  FOCUS', 8, 74);
-      ctx.fillText(' ESC  PAUSE', 8, 88);
+      ctx.font = 'bold 16px "Courier New", monospace';
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = '#00ffff';
+      ctx.fillText(`SCORE ${score}`, 20, 30);
 
-      // Coyote Time
-      ctx.fillStyle = '#ffff00';
-      ctx.fillText(' DG-LAB TIME', 8, 115);
+      // Wave info
+      ctx.fillStyle = '#ff00ff';
+      ctx.font = '14px "Courier New", monospace';
+      ctx.shadowColor = '#ff00ff';
+      ctx.fillText(`WAVE ${waveCount}`, 20, 52);
+
+      // Hi-score
       ctx.fillStyle = '#666';
-      ctx.fillText(' 0.08s grace period', 8, 128);
-      ctx.fillText(' after near miss', 8, 140);
+      ctx.font = '12px "Courier New", monospace';
+      ctx.shadowBlur = 0;
+      const hiScore = localStorage.getItem('bulletHellHighScore') || 0;
+      ctx.fillText(`HI ${hiScore}`, 20, 70);
+      ctx.restore();
 
-      // Multiplayer
-      ctx.fillStyle = '#00ff00';
-      ctx.fillText(' MULTIPLAYER', 8, 168);
-      ctx.fillStyle = '#666';
-      ctx.fillText(' 2P LOCAL CO-OP', 8, 181);
-      ctx.fillText(' P2: WASD + F/G', 8, 193);
+      // === LIVES (Top Right) ===
+      ctx.save();
+      ctx.textAlign = 'right';
+      ctx.font = '16px "Courier New", monospace';
+      for (let i = 0; i < player.lives; i++) {
+        ctx.fillStyle = i === player.lives - 1 ? '#ff4444' : '#ff6666';
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#ff4444';
+        ctx.fillText('❤', canvas.width - 20 - i * 20, 30);
+      }
+      ctx.restore();
 
-      // Boss Phase
+      // === POWER BAR (Bottom Left) ===
+      ctx.save();
+      ctx.textAlign = 'left';
+      const powerWidth = 100;
+      const powerHeight = 8;
+      const powerX = 20;
+      const powerY = canvas.height - 30;
+
+      // Power bar background
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(powerX, powerY, powerWidth, powerHeight);
+
+      // Power bar fill
+      const powerPercent = player.power / player.maxPower;
+      const powerGradient = ctx.createLinearGradient(powerX, 0, powerX + powerWidth, 0);
+      powerGradient.addColorStop(0, '#ff0066');
+      powerGradient.addColorStop(1, '#ff00ff');
+      ctx.fillStyle = powerGradient;
+      ctx.fillRect(powerX, powerY, powerWidth * powerPercent, powerHeight);
+
+      // Power bar border
+      ctx.strokeStyle = '#ff0066';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(powerX, powerY, powerWidth, powerHeight);
+
+      // Power label
+      ctx.fillStyle = '#ff0066';
+      ctx.font = '10px "Courier New", monospace';
+      ctx.fillText(`PWR ${player.power}/${player.maxPower}`, powerX, powerY - 5);
+      ctx.restore();
+
+      // === BOSS HEALTH (Below Player Area - Only when active) ===
       if (boss.active) {
-        ctx.fillStyle = '#ff00ff';
-        ctx.fillText(' BOSS PHASE', 8, 225);
-        ctx.fillStyle = '#fff';
-        ctx.font = '12px monospace';
-        ctx.fillText(` ${bossIndex+1} / 3`, 8, 242);
-        ctx.fillText(` FORM ${boss.phase+1} / 3`, 8, 258);
-        ctx.font = '10px monospace';
+        ctx.save();
+        const bossBarWidth = 300;
+        const bossBarHeight = 12;
+        const bossBarX = canvas.width / 2 - bossBarWidth / 2;
+        const bossBarY = canvas.height - 50;
+
+        // Boss name
+        ctx.textAlign = 'center';
+        ctx.fillStyle = boss.color;
+        ctx.font = 'bold 12px "Courier New", monospace';
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = boss.color;
+        ctx.fillText(boss.name, canvas.width / 2, bossBarY - 18);
+
+        // Health bar background
+        ctx.fillStyle = '#1a1a2e';
+        ctx.fillRect(bossBarX, bossBarY, bossBarWidth, bossBarHeight);
+
+        // Health bar fill
+        const bossHpPercent = boss.hp / boss.maxHp;
+        ctx.fillStyle = boss.color;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = boss.color;
+        ctx.fillRect(bossBarX, bossBarY, bossBarWidth * bossHpPercent, bossBarHeight);
+
+        // Shield if active
+        if (boss.shieldHp > 0) {
+          ctx.strokeStyle = '#ffff00';
+          ctx.lineWidth = 2;
+          const shieldPercent = boss.shieldHp / (boss.maxHp * 0.1);
+          ctx.strokeRect(bossBarX - 2, bossBarY - 2, bossBarWidth * shieldPercent + 4, bossBarHeight + 4);
+        }
+
+        ctx.restore();
       }
 
-      ctx.fillStyle = '#333';
-      ctx.fillText('──────────', 5, 280);
+      // === GRAZE / COMBO (Center Low - Subtle) ===
+      if (graze > 0) {
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#ff00ff';
+        ctx.font = '12px "Courier New", monospace';
+        ctx.globalAlpha = 0.7;
+        ctx.fillText(`GRAZE ${graze}`, canvas.width / 2, canvas.height - 75);
+        ctx.restore();
+      }
+    }
 
       // === PLAYER STATUS AREA ===
       // Lives with animation
