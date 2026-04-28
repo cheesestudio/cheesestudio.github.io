@@ -1342,15 +1342,15 @@
         ctx.save();
         const nameY = 40 + Math.sin(time * 5) * 5;
         ctx.fillStyle = boss.color;
-        ctx.font = 'bold 18px monospace';
+        ctx.font = 'bold 20px "Courier New", monospace';
         ctx.textAlign = 'center';
-        ctx.shadowBlur = 15;
+        ctx.shadowBlur = 20;
         ctx.shadowColor = boss.color;
         ctx.globalAlpha = Math.min(1, boss.entranceTime * 2);
         ctx.fillText(boss.name, boss.x, nameY);
-        ctx.font = '12px monospace';
+        ctx.font = '14px "Courier New", monospace';
         ctx.globalAlpha = Math.min(1, boss.entranceTime * 2) * 0.7;
-        ctx.fillText(`WAVE ${waveCount}`, boss.x, nameY + 18);
+        ctx.fillText(`WAVE ${waveCount}`, boss.x, nameY + 22);
         ctx.restore();
       }
 
@@ -1374,108 +1374,138 @@
         }
       }
 
+      // === PARTICLE FIELD LAYER (new) ===
+      renderBossParticles(time);
+
       // === LAYER 1: Outer energy field ===
-      const energyField = ctx.createRadialGradient(0, 0, boss.r * 0.3, 0, 0, boss.r * 2);
-      energyField.addColorStop(0, boss.color + '22');
-      energyField.addColorStop(0.5, boss.color + '11');
+      const energyField = ctx.createRadialGradient(0, 0, boss.r * 0.3, 0, 0, boss.r * 2.5);
+      energyField.addColorStop(0, boss.color + '44');
+      energyField.addColorStop(0.4, boss.color + '22');
+      energyField.addColorStop(0.7, boss.color + '08');
       energyField.addColorStop(1, 'transparent');
       ctx.fillStyle = energyField;
       ctx.beginPath();
-      ctx.arc(0, 0, boss.r * 2, 0, Math.PI * 2);
+      ctx.arc(0, 0, boss.r * 2.5, 0, Math.PI * 2);
       ctx.fill();
 
-      // Pulsing outer ring
-      const pulse = Math.sin(time * 3) * 0.1 + 1;
+      // Pulsing outer ring with glow
+      const pulse = Math.sin(time * 3) * 0.15 + 1;
       ctx.strokeStyle = boss.color;
-      ctx.lineWidth = 2;
-      ctx.globalAlpha = 0.3;
+      ctx.lineWidth = 3;
+      ctx.globalAlpha = 0.4;
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = boss.color;
       ctx.beginPath();
       ctx.arc(0, 0, boss.r * 1.8 * pulse, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      // Second outer ring
+      ctx.strokeStyle = boss.color;
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.2;
+      ctx.beginPath();
+      ctx.arc(0, 0, boss.r * 2.2, 0, Math.PI * 2);
       ctx.stroke();
       ctx.globalAlpha = 1;
 
       // === LAYER 2: Main body (pattern-specific shape) ===
-      ctx.shadowBlur = 30;
+      ctx.shadowBlur = 40;
       ctx.shadowColor = boss.color;
-      ctx.fillStyle = boss.color;
+
+      // Inner body fill
+      const bodyGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, boss.r * 1.2);
+      bodyGradient.addColorStop(0, boss.color + 'cc');
+      bodyGradient.addColorStop(0.6, boss.color + '88');
+      bodyGradient.addColorStop(1, boss.color + '44');
+      ctx.fillStyle = bodyGradient;
       ctx.beginPath();
 
       const drawPattern = boss.pattern;
       if (drawPattern === 'spiral' || drawPattern === 'double_spiral' || drawPattern === 'helix') {
-        // Spiral arm shape
-        for (let i = 0; i < 5; i++) {
-          const angle = (i / 5) * Math.PI * 2 + time * 0.5;
-          const len = boss.r * (0.8 + Math.sin(time * 2 + i) * 0.2);
+        // Spiral arm shape with more arms
+        for (let i = 0; i < 6; i++) {
+          const angle = (i / 6) * Math.PI * 2 + time * 0.5;
+          const len = boss.r * (0.7 + Math.sin(time * 2 + i * 0.5) * 0.3);
           ctx.lineTo(Math.cos(angle) * len, Math.sin(angle) * len);
         }
         ctx.closePath();
       } else if (drawPattern === 'galaxy' || drawPattern === 'ring' || drawPattern === 'flower') {
         // Multi-layered circle with orbiting nodes
-        ctx.arc(0, 0, boss.r * 0.8, 0, Math.PI * 2);
+        ctx.arc(0, 0, boss.r * 0.9, 0, Math.PI * 2);
         ctx.closePath();
         // Orbiting nodes
-        for (let i = 0; i < 6; i++) {
-          const angle = (i / 6) * Math.PI * 2 + time;
-          const nodeX = Math.cos(angle) * boss.r * 0.5;
-          const nodeY = Math.sin(angle) * boss.r * 0.5;
-          ctx.moveTo(nodeX + 5, nodeY);
-          ctx.arc(nodeX, nodeY, 5, 0, Math.PI * 2);
+        for (let i = 0; i < 8; i++) {
+          const angle = (i / 8) * Math.PI * 2 + time * 1.2;
+          const nodeX = Math.cos(angle) * boss.r * 0.55;
+          const nodeY = Math.sin(angle) * boss.r * 0.55;
+          ctx.moveTo(nodeX + 6, nodeY);
+          ctx.arc(nodeX, nodeY, 6, 0, Math.PI * 2);
         }
       } else if (drawPattern === 'vortex' || drawPattern === 'burst') {
         // Vortex/spiral inward shape
-        for (let i = 0; i < 8; i++) {
-          const angle = (i / 8) * Math.PI * 2;
-          const len = boss.r * (0.6 + Math.sin(time * 4 + i * 0.5) * 0.3);
+        for (let i = 0; i < 10; i++) {
+          const angle = (i / 10) * Math.PI * 2;
+          const len = boss.r * (0.5 + Math.sin(time * 4 + i * 0.5) * 0.35);
           ctx.lineTo(Math.cos(angle) * len, Math.sin(angle) * len);
         }
         ctx.closePath();
       } else if (drawPattern === 'snake' || drawPattern === 'homing') {
-        // Organic blob shape
-        for (let i = 0; i < 12; i++) {
-          const angle = (i / 12) * Math.PI * 2;
-          const wobble = Math.sin(time * 3 + i * 0.8) * boss.r * 0.2;
-          const len = boss.r * 0.7 + wobble;
+        // Organic blob shape with more points
+        for (let i = 0; i < 16; i++) {
+          const angle = (i / 16) * Math.PI * 2;
+          const wobble = Math.sin(time * 3 + i * 0.8) * boss.r * 0.25;
+          const len = boss.r * 0.65 + wobble;
           ctx.lineTo(Math.cos(angle) * len, Math.sin(angle) * len);
         }
         ctx.closePath();
       } else if (drawPattern === 'cross') {
-        // Cross shape
-        ctx.moveTo(-boss.r, 0);
-        ctx.lineTo(-boss.r * 0.3, 0);
-        ctx.lineTo(-boss.r * 0.3, -boss.r);
-        ctx.lineTo(boss.r * 0.3, -boss.r);
-        ctx.lineTo(boss.r * 0.3, 0);
-        ctx.lineTo(boss.r, 0);
-        ctx.lineTo(boss.r * 0.3, 0);
-        ctx.lineTo(boss.r * 0.3, boss.r);
-        ctx.lineTo(-boss.r * 0.3, boss.r);
-        ctx.lineTo(-boss.r * 0.3, 0);
+        // Cross shape with details
+        ctx.moveTo(-boss.r * 1.1, 0);
+        ctx.lineTo(-boss.r * 0.35, 0);
+        ctx.lineTo(-boss.r * 0.35, -boss.r * 1.1);
+        ctx.lineTo(boss.r * 0.35, -boss.r * 1.1);
+        ctx.lineTo(boss.r * 0.35, 0);
+        ctx.lineTo(boss.r * 1.1, 0);
+        ctx.lineTo(boss.r * 0.35, 0);
+        ctx.lineTo(boss.r * 0.35, boss.r * 1.1);
+        ctx.lineTo(-boss.r * 0.35, boss.r * 1.1);
+        ctx.lineTo(-boss.r * 0.35, 0);
         ctx.closePath();
       } else if (drawPattern === 'pulse' || drawPattern === 'wave') {
-        // Breathing circle
-        const breathe = Math.sin(time * 2) * 0.15 + 1;
+        // Breathing circle with inner rings
+        const breathe = Math.sin(time * 2) * 0.12 + 1;
         ctx.arc(0, 0, boss.r * breathe, 0, Math.PI * 2);
         ctx.closePath();
+        // Inner concentric rings
+        ctx.strokeStyle = boss.color;
+        ctx.lineWidth = 2;
+        for (let r = 0.3; r < 0.9; r += 0.2) {
+          ctx.globalAlpha = 0.3;
+          ctx.beginPath();
+          ctx.arc(0, 0, boss.r * r * breathe, 0, Math.PI * 2);
+          ctx.stroke();
+        }
       } else if (drawPattern === 'laser' || drawPattern === 'beam') {
-        // Diamond/pointing shape
-        ctx.moveTo(0, -boss.r * 1.2);
-        ctx.lineTo(boss.r * 0.7, 0);
-        ctx.lineTo(0, boss.r * 0.8);
-        ctx.lineTo(-boss.r * 0.7, 0);
+        // Diamond/pointing shape with sharp edges
+        ctx.moveTo(0, -boss.r * 1.3);
+        ctx.lineTo(boss.r * 0.75, 0);
+        ctx.lineTo(0, boss.r * 0.9);
+        ctx.lineTo(-boss.r * 0.75, 0);
         ctx.closePath();
       } else if (drawPattern === 'rain' || drawPattern === 'chaos') {
-        // Irregular rocky shape
-        for (let i = 0; i < 10; i++) {
-          const angle = (i / 10) * Math.PI * 2;
-          const irregularity = Math.random() ? (Math.sin(time * 5 + i) * 0.2) : 0;
-          const len = boss.r * (0.6 + irregularity);
+        // Irregular rocky shape with more points
+        for (let i = 0; i < 14; i++) {
+          const angle = (i / 14) * Math.PI * 2;
+          const irregularity = Math.random() ? (Math.sin(time * 5 + i) * 0.25) : 0;
+          const len = boss.r * (0.55 + irregularity);
           if (i === 0) ctx.moveTo(Math.cos(angle) * len, Math.sin(angle) * len);
           else ctx.lineTo(Math.cos(angle) * len, Math.sin(angle) * len);
         }
         ctx.closePath();
       } else {
-        // Default: polygon based on phase
-        const sides = 3 + boss.phase;
+        // Default: polygon based on phase with more sides
+        const sides = 4 + boss.phase;
         for (let i = 0; i < sides; i++) {
           const angle = (i / sides) * Math.PI * 2 - Math.PI / 2;
           const px = Math.cos(angle) * boss.r;
@@ -1488,27 +1518,58 @@
       ctx.fill();
 
       // === LAYER 3: Inner details ===
-      // Inner pattern
-      ctx.fillStyle = '#000000';
-      ctx.globalAlpha = 0.5;
+      // Inner dark core with pattern
+      ctx.fillStyle = '#0a0a1a';
+      ctx.globalAlpha = 0.7;
       ctx.beginPath();
-      ctx.arc(0, 0, boss.r * 0.5, 0, Math.PI * 2);
+      ctx.arc(0, 0, boss.r * 0.55, 0, Math.PI * 2);
       ctx.fill();
       ctx.globalAlpha = 1;
 
-      // === LAYER 4: Core ===
-      // Glowing core with pulse
-      const corePulse = Math.sin(time * 5) * 0.1 + 1;
-      const coreGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, boss.r * 0.3 * corePulse);
+      // Inner details - geometric pattern inside
+      ctx.strokeStyle = boss.color;
+      ctx.lineWidth = 1.5;
+      ctx.globalAlpha = 0.5;
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const angle = (i / 6) * Math.PI * 2 + time * 0.3;
+        ctx.moveTo(0, 0);
+        ctx.lineTo(Math.cos(angle) * boss.r * 0.45, Math.sin(angle) * boss.r * 0.45);
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // === LAYER 4: Eyes/Face (new) ===
+      renderBossFace(time);
+
+      // === LAYER 5: Core ===
+      // Glowing core with pulse - larger and more prominent
+      const corePulse = Math.sin(time * 5) * 0.15 + 1;
+      const coreGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, boss.r * 0.35 * corePulse);
       coreGradient.addColorStop(0, '#ffffff');
-      coreGradient.addColorStop(0.5, boss.color);
+      coreGradient.addColorStop(0.3, boss.color);
+      coreGradient.addColorStop(0.7, boss.color + 'aa');
       coreGradient.addColorStop(1, boss.color + '00');
       ctx.fillStyle = coreGradient;
+      ctx.shadowBlur = 30;
+      ctx.shadowColor = boss.color;
       ctx.beginPath();
-      ctx.arc(0, 0, boss.r * 0.25 * corePulse, 0, Math.PI * 2);
+      ctx.arc(0, 0, boss.r * 0.28 * corePulse, 0, Math.PI * 2);
       ctx.fill();
+      ctx.shadowBlur = 0;
 
-      // === LAYER 5: Rotating rings/orbits ===
+      // Secondary inner glow
+      ctx.globalAlpha = 0.6;
+      const innerCore = ctx.createRadialGradient(0, 0, 0, 0, 0, boss.r * 0.15);
+      innerCore.addColorStop(0, '#ffffff');
+      innerCore.addColorStop(1, 'transparent');
+      ctx.fillStyle = innerCore;
+      ctx.beginPath();
+      ctx.arc(0, 0, boss.r * 0.12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // === LAYER 6: Rotating rings/orbits ===
       const ringAngle = time * 2;
       ctx.strokeStyle = boss.color;
       ctx.lineWidth = 2;
@@ -1516,63 +1577,284 @@
 
       // Primary orbit
       ctx.beginPath();
-      ctx.ellipse(0, 0, boss.r * 1.1, boss.r * 0.35, ringAngle, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, boss.r * 1.15, boss.r * 0.38, ringAngle, 0, Math.PI * 2);
       ctx.stroke();
 
       // Secondary orbit (perpendicular)
       ctx.beginPath();
-      ctx.ellipse(0, 0, boss.r * 0.35, boss.r * 1.1, ringAngle * 0.7, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, boss.r * 0.38, boss.r * 1.15, ringAngle * 0.7, 0, Math.PI * 2);
       ctx.stroke();
 
       // Extra rings for specific patterns
       if (['galaxy', 'flower', 'vortex', 'burst'].includes(drawPattern)) {
         ctx.beginPath();
-        ctx.ellipse(0, 0, boss.r * 1.3, boss.r * 0.5, ringAngle * 1.3, 0, Math.PI * 2);
-        ctx.globalAlpha = 0.3;
+        ctx.ellipse(0, 0, boss.r * 1.4, boss.r * 0.55, ringAngle * 1.3, 0, Math.PI * 2);
+        ctx.globalAlpha = 0.25;
+        ctx.stroke();
+        // Third ring
+        ctx.beginPath();
+        ctx.ellipse(0, 0, boss.r * 1.6, boss.r * 0.65, ringAngle * 0.5, 0, Math.PI * 2);
         ctx.stroke();
       }
 
       // Orbiting particles for galaxy pattern
       if (drawPattern === 'galaxy') {
-        for (let i = 0; i < 4; i++) {
-          const orbitAngle = ringAngle * 1.5 + (i / 4) * Math.PI * 2;
-          const orbitX = Math.cos(orbitAngle) * boss.r * 0.9;
-          const orbitY = Math.sin(orbitAngle) * boss.r * 0.3;
+        for (let i = 0; i < 6; i++) {
+          const orbitAngle = ringAngle * 1.5 + (i / 6) * Math.PI * 2;
+          const orbitX = Math.cos(orbitAngle) * boss.r * 0.95;
+          const orbitY = Math.sin(orbitAngle) * boss.r * 0.35;
+          const particleSize = 2 + Math.sin(time * 4 + i) * 1;
           ctx.fillStyle = '#ffffff';
-          ctx.globalAlpha = 0.8;
+          ctx.globalAlpha = 0.9;
           ctx.beginPath();
-          ctx.arc(orbitX, orbitY, 3, 0, Math.PI * 2);
+          ctx.arc(orbitX, orbitY, particleSize, 0, Math.PI * 2);
+          ctx.fill();
+          // Particle glow
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(orbitX, orbitY, particleSize * 0.5, 0, Math.PI * 2);
           ctx.fill();
         }
       }
 
       ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
 
-      // === LAYER 6: Energy spikes (for aggressive patterns) ===
+      // === LAYER 7: Energy spikes (for aggressive patterns) ===
       if (['laser', 'beam', 'cross', 'rain'].includes(drawPattern)) {
         ctx.strokeStyle = boss.color;
         ctx.lineWidth = 3;
         ctx.globalAlpha = 0.7;
-        for (let i = 0; i < 8; i++) {
-          const angle = (i / 8) * Math.PI * 2 + time;
-          const innerR = boss.r * 0.9;
-          const outerR = boss.r * 1.3 + Math.sin(time * 8 + i) * 5;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = boss.color;
+        for (let i = 0; i < 10; i++) {
+          const angle = (i / 10) * Math.PI * 2 + time;
+          const innerR = boss.r * 0.85;
+          const outerR = boss.r * 1.35 + Math.sin(time * 8 + i) * 8;
           ctx.beginPath();
           ctx.moveTo(Math.cos(angle) * innerR, Math.sin(angle) * innerR);
           ctx.lineTo(Math.cos(angle) * outerR, Math.sin(angle) * outerR);
           ctx.stroke();
         }
+        ctx.shadowBlur = 0;
       }
+
+      // === LAYER 8: Floating debris/satellites ===
+      const debrisCount = 4 + boss.phase * 2;
+      for (let i = 0; i < debrisCount; i++) {
+        const debrisAngle = time * 0.5 + (i / debrisCount) * Math.PI * 2;
+        const debrisDist = boss.r * (1.6 + Math.sin(time * 2 + i) * 0.3);
+        const debrisX = Math.cos(debrisAngle) * debrisDist;
+        const debrisY = Math.sin(debrisAngle) * debrisDist;
+        const debrisSize = 2 + Math.sin(time * 3 + i * 2) * 1;
+        const debrisAlpha = 0.3 + Math.sin(time * 4 + i) * 0.2;
+
+        ctx.fillStyle = boss.color;
+        ctx.globalAlpha = debrisAlpha;
+        ctx.beginPath();
+        ctx.arc(debrisX, debrisY, debrisSize, 0, Math.PI * 2);
+        ctx.fill();
+        // Debris trail
+        ctx.globalAlpha = debrisAlpha * 0.3;
+        ctx.beginPath();
+        ctx.arc(debrisX - Math.cos(debrisAngle) * 3, debrisY - Math.sin(debrisAngle) * 3, debrisSize * 0.7, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
 
       // Flash effect during entrance
       if (!boss.entranceComplete) {
         ctx.fillStyle = boss.color;
-        ctx.globalAlpha = 0.3 + Math.sin(time * 20) * 0.2;
+        ctx.globalAlpha = 0.4 + Math.sin(time * 20) * 0.25;
         ctx.fill();
       }
 
       ctx.globalAlpha = 1;
       ctx.restore();
+    }
+
+    // Boss particle system
+    const bossParticles = [];
+    function initBossParticles() {
+      bossParticles.length = 0;
+      for (let i = 0; i < 20; i++) {
+        bossParticles.push({
+          angle: Math.random() * Math.PI * 2,
+          dist: 0.5 + Math.random() * 1.5,
+          speed: 0.2 + Math.random() * 0.5,
+          size: 1 + Math.random() * 3,
+          alpha: 0.2 + Math.random() * 0.4,
+          drift: (Math.random() - 0.5) * 0.1
+        });
+      }
+    }
+    initBossParticles();
+
+    function renderBossParticles(time) {
+      const p = bossParticles.map((particle, i) => {
+        const angle = particle.angle + time * particle.speed + particle.drift * time;
+        const dist = particle.dist * boss.r * (1 + Math.sin(time * 2 + i) * 0.2);
+        const x = Math.cos(angle) * dist;
+        const y = Math.sin(angle) * dist;
+        const size = particle.size * (0.8 + Math.sin(time * 3 + i) * 0.4);
+        return { x, y, size, alpha: particle.alpha };
+      });
+
+      // Draw particles with glow
+      for (const particle of p) {
+        ctx.save();
+        // Outer glow
+        const gradient = ctx.createRadialGradient(particle.x, particle.y, 0, particle.x, particle.y, particle.size * 3);
+        gradient.addColorStop(0, boss.color + Math.floor(particle.alpha * 255).toString(16).padStart(2, '0'));
+        gradient.addColorStop(0.5, boss.color + Math.floor(particle.alpha * 0.3 * 255).toString(16).padStart(2, '0'));
+        gradient.addColorStop(1, 'transparent');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.size * 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Core
+        ctx.fillStyle = '#ffffff';
+        ctx.globalAlpha = particle.alpha;
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.size * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    // Boss face/eye renderer
+    function renderBossFace(time) {
+      const faceOffset = boss.r * 0.25;
+      const eyeSize = boss.r * 0.12;
+      const eyeSpacing = boss.r * 0.35;
+
+      // Determine face expression based on boss HP
+      const hpPercent = boss.hp / boss.maxHp;
+      let expression = 'normal';
+      if (hpPercent < 0.3) expression = 'angry';
+      else if (hpPercent < 0.6) expression = 'determined';
+
+      // Eye glow
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = boss.color;
+
+      // Left eye
+      ctx.save();
+      ctx.translate(-eyeSpacing, -faceOffset);
+
+      // Eye white
+      ctx.fillStyle = '#0a0a1a';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, eyeSize * 1.3, eyeSize * 1.1, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Expression modification
+      if (expression === 'angry') {
+        // Angry eyebrows
+        ctx.strokeStyle = boss.color;
+        ctx.lineWidth = 3;
+        ctx.globalAlpha = 0.8;
+        ctx.beginPath();
+        ctx.moveTo(-eyeSize * 1.5, -eyeSize * 1.8);
+        ctx.lineTo(-eyeSize * 0.3, -eyeSize * 0.8);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(eyeSize * 1.5, -eyeSize * 1.8);
+        ctx.lineTo(eyeSize * 0.3, -eyeSize * 0.8);
+        ctx.stroke();
+      }
+
+      // Pupil with tracking toward player
+      const trackAngle = Math.atan2(player.y - boss.y, player.x - boss.x);
+      const pupilOffset = eyeSize * 0.3;
+      const pupilX = Math.cos(trackAngle) * pupilOffset;
+      const pupilY = Math.sin(trackAngle) * pupilOffset;
+
+      ctx.fillStyle = boss.color;
+      ctx.globalAlpha = 1;
+      ctx.beginPath();
+      ctx.arc(pupilX, pupilY, eyeSize * 0.6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Eye highlight
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(pupilX - eyeSize * 0.15, pupilY - eyeSize * 0.15, eyeSize * 0.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+
+      // Right eye
+      ctx.save();
+      ctx.translate(eyeSpacing, -faceOffset);
+
+      ctx.fillStyle = '#0a0a1a';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, eyeSize * 1.3, eyeSize * 1.1, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (expression === 'angry') {
+        ctx.strokeStyle = boss.color;
+        ctx.lineWidth = 3;
+        ctx.globalAlpha = 0.8;
+        ctx.beginPath();
+        ctx.moveTo(-eyeSize * 1.5, -eyeSize * 1.8);
+        ctx.lineTo(-eyeSize * 0.3, -eyeSize * 0.8);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(eyeSize * 1.5, -eyeSize * 1.8);
+        ctx.lineTo(eyeSize * 0.3, -eyeSize * 0.8);
+        ctx.stroke();
+      }
+
+      const pupilX2 = Math.cos(trackAngle) * pupilOffset;
+      const pupilY2 = Math.sin(trackAngle) * pupilOffset;
+
+      ctx.fillStyle = boss.color;
+      ctx.globalAlpha = 1;
+      ctx.beginPath();
+      ctx.arc(pupilX2, pupilY2, eyeSize * 0.6, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(pupilX2 - eyeSize * 0.15, pupilY2 - eyeSize * 0.15, eyeSize * 0.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+
+      // Mouth based on HP (only when damaged)
+      if (hpPercent < 0.7) {
+        ctx.save();
+        ctx.translate(0, faceOffset * 0.8);
+
+        const mouthWidth = boss.r * 0.25;
+        const mouthOpen = hpPercent < 0.3 ? 0.6 : (hpPercent < 0.5 ? 0.3 : 0.1);
+
+        ctx.fillStyle = '#0a0a1a';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, mouthWidth, mouthWidth * (0.3 + mouthOpen), 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (mouthOpen > 0.2) {
+          // Teeth
+          ctx.strokeStyle = boss.color;
+          ctx.lineWidth = 2;
+          ctx.globalAlpha = 0.8;
+          for (let i = -2; i <= 2; i++) {
+            ctx.beginPath();
+            ctx.moveTo(i * mouthWidth * 0.35, -mouthWidth * 0.15);
+            ctx.lineTo(i * mouthWidth * 0.35, mouthWidth * 0.1);
+            ctx.stroke();
+          }
+        }
+
+        ctx.restore();
+      }
+
+      ctx.shadowBlur = 0;
     }
 
     function renderBossAbilities() {
