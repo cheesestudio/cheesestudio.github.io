@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": 1788430917235,
+  "revision": 1788433258306,
   "players": [
     {
       "displayName": "Cheese ≻v≺",
@@ -9,6 +9,10 @@
     {
       "displayName": "艾拉贝尔ElaBlade",
       "badge": 6
+    },
+    {
+      "displayName": "测试",
+      "badge": 4
     }
   ]
 }
