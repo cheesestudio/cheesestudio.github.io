@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "revision": 1788433258306,
+  "revision": 1788433756358,
   "players": [
     {
       "displayName": "Cheese ≻v≺",
@@ -11,8 +11,16 @@
       "badge": 6
     },
     {
-      "displayName": "测试",
+      "displayName": "Milk'Tea",
       "badge": 4
+    },
+    {
+      "displayName": "芝士焗红薯",
+      "badge": 6
+    },
+    {
+      "displayName": "夕夕夕颜",
+      "badge": 1
     }
   ]
 }
