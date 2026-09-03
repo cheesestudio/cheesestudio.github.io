@@ -1,10 +1,43 @@
 from pathlib import Path
 import subprocess
+import os
 
 import pytest
 
 from roster_core import (GitPublisher, Player, PublishError, Roster, RosterError, digest,
                          parse_roster, revised_roster, save_atomic, serialize_roster)
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows system proxy")
+def test_desktop_git_uses_system_proxy_without_changing_parent(monkeypatch, tmp_path):
+    import urllib.request
+    for key in ("HTTPS_PROXY", "https_proxy", "ALL_PROXY", "all_proxy"):
+        monkeypatch.delenv(key, raising=False)
+    monkeypatch.setattr(urllib.request, "getproxies_registry", lambda: {"https": "http://127.0.0.1:7890"})
+    captured = []
+    def run(command, **kwargs):
+        captured.append(kwargs["env"])
+        return subprocess.CompletedProcess(command, 0, b"ok", b"")
+    monkeypatch.setattr(subprocess, "run", run)
+    GitPublisher(tmp_path).run("fetch", "origin")
+    assert captured[0]["HTTPS_PROXY"] == "http://127.0.0.1:7890"
+    assert "HTTPS_PROXY" not in os.environ
+
+
+def test_git_retries_connection_once_but_not_authentication(monkeypatch, tmp_path):
+    errors = [b"Failed to connect to github.com port 443", b""]
+    calls = []
+    def run(command, **kwargs):
+        error = errors.pop(0)
+        calls.append(command)
+        return subprocess.CompletedProcess(command, 1 if error else 0, b"", error)
+    monkeypatch.setattr(subprocess, "run", run)
+    GitPublisher(tmp_path).run("fetch", "origin")
+    assert len(calls) == 2
+    errors[:] = [b"Authentication failed"]
+    with pytest.raises(PublishError, match="Authentication"):
+        GitPublisher(tmp_path).run("fetch", "origin")
+    assert len(calls) == 3
 
 
 def test_unicode_roundtrip_and_revision():

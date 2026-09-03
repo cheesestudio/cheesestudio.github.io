@@ -166,17 +166,37 @@ class GitPublisher:
         for key in ("GIT_INDEX_FILE", "GIT_DIR", "GIT_WORK_TREE"):
             environment.pop(key, None)
         environment["GIT_TERMINAL_PROMPT"] = "0"
+        # Desktop launches do not inherit the proxy environment of a terminal.
+        # Apply Windows' existing system proxy only to this Git subprocess.
+        if os.name == "nt" and not any(environment.get(k) for k in ("HTTPS_PROXY", "https_proxy", "ALL_PROXY", "all_proxy")):
+            from urllib.request import getproxies_registry
+            proxies = getproxies_registry()
+            proxy = proxies.get("https") or proxies.get("http")
+            if proxy:
+                environment["HTTPS_PROXY"] = proxy
         if env:
             environment.update(env)
-        try:
-            result = subprocess.run([self.git, "-C", str(self.repo), *args], input=input,
-                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                    timeout=90, env=environment,
-                                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
-        except (OSError, subprocess.TimeoutExpired) as exc:
-            raise PublishError(f"Git 执行失败或超时：{exc}") from exc
+        network = bool(args) and args[0] in ("fetch", "push")
+        for attempt in range(2 if network else 1):
+            try:
+                result = subprocess.run([self.git, "-C", str(self.repo), *args], input=input,
+                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                        timeout=60 if network else 90, env=environment,
+                                        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+            except subprocess.TimeoutExpired as exc:
+                if network and attempt == 0:
+                    continue
+                raise PublishError("Git 连接超时，本地修改仍保留。请检查代理是否开启，再点击读取 GitHub 或重试提交。") from exc
+            except OSError as exc:
+                raise PublishError(f"Git 无法启动：{exc}") from exc
+            error = result.stderr.decode("utf-8", errors="replace").lower()
+            transient = any(word in error for word in ("could not connect", "failed to connect", "could not resolve", "timed out", "connection reset", "connection was reset"))
+            if not (network and attempt == 0 and result.returncode and transient):
+                break
         if check and result.returncode:
             message = result.stderr.decode("utf-8", errors="replace").strip()
+            if network and transient:
+                message = "无法连接 GitHub（已重试）。本地修改仍保留。\n软件会使用 Windows 系统代理，请确认代理软件正在运行。\n\n" + message
             raise PublishError(message or "Git 命令失败。")
         return result
 
