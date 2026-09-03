@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "revision": 1788428914860,
+  "players": [
+    {
+      "displayName": "Cheese ≻v≺",
+      "badge": 6
+    },
+    {
+      "displayName": "艾拉贝尔ElaBlade",
+      "badge": 6
+    }
+  ]
+}
