@@ -12,17 +12,23 @@ import time
 from dataclasses import dataclass
 from typing import Callable
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 MAX_PLAYERS = 512
 MAX_BYTES = 48000
 ROSTER_FILE = "SuccubusList.txt"
 ORIGIN_URL = "https://github.com/cheesestudio/cheesestudio.github.io.git"
-BADGES = ((1, "粉樱初契", "VIP_01_Rosebud.png"),
-          (2, "月魅银辉", "VIP_02_MoonCharm.png"),
-          (3, "绯红誓约", "VIP_03_CrimsonPact.png"),
-          (4, "鎏金契约", "VIP_04_GildedPact.png"),
-          (5, "幻晶星冕", "VIP_05_AstralCrown.png"),
-          (6, "永夜魔冠", "VIP_06_EternalNight.png"))
+BADGES = ((1, "粉桃眨眼", "VIP_01.png"),
+          (2, "月紫好梦", "VIP_02.png"),
+          (3, "薄荷欢笑", "VIP_03.png"),
+          (4, "晴蓝害羞", "VIP_04.png"),
+          (5, "蜜桃心意", "VIP_05.png"),
+          (6, "莓红调皮", "VIP_06.png"),
+          (7, "丁香蝴蝶结", "VIP_07.png"),
+          (8, "奶油可可", "VIP_08.png"),
+          (9, "珊瑚吐舌", "VIP_09.png"),
+          (10, "青瓷慵懒", "VIP_10.png"),
+          (11, "蓝紫星眸", "VIP_11.png"),
+          (12, "樱雪微笑", "VIP_12.png"))
 
 
 class RosterError(ValueError):
@@ -37,6 +43,8 @@ class PublishError(RuntimeError):
 class Player:
     display_name: str
     badge: int
+    # Unix seconds at which membership stops. 0 means no expiry (permanent).
+    expires_at: int = 0
 
 
 @dataclass(frozen=True)
@@ -66,8 +74,10 @@ def validate_players(players: tuple[Player, ...]) -> None:
         if name in names:
             raise RosterError(f"昵称重复：{name}")
         names.add(name)
-        if type(player.badge) is not int or not 1 <= player.badge <= 6:
-            raise RosterError(f"第 {row} 行：徽章类别必须为 1–6。")
+        if type(player.badge) is not int or not 1 <= player.badge <= len(BADGES):
+            raise RosterError(f"第 {row} 行：徽章类别必须为 1–{len(BADGES)}。")
+        if type(player.expires_at) is not int or not 0 <= player.expires_at <= 9007199254740991:
+            raise RosterError(f"第 {row} 行：到期时间必须是非负 Unix 秒数，0 表示永久。")
 
 
 def _unique_object(pairs):
@@ -91,7 +101,8 @@ def parse_roster(raw: bytes) -> Roster:
         raise RosterError("名单必须是 UTF-8 JSON，或尚未填写的空文件。") from exc
     if not isinstance(document, dict) or set(document) != {"schemaVersion", "revision", "players"}:
         raise RosterError("名单需要 schemaVersion、revision、players 三个字段。")
-    if type(document["schemaVersion"]) is not int or document["schemaVersion"] != SCHEMA_VERSION:
+    schema = document["schemaVersion"]
+    if type(schema) is not int or schema not in (1, SCHEMA_VERSION):
         raise RosterError("不支持的名单格式版本。")
     revision = document["revision"]
     if type(revision) is not int or not 0 <= revision <= 9007199254740991:
@@ -101,9 +112,11 @@ def parse_roster(raw: bytes) -> Roster:
         raise RosterError(f"players 必须是最多 {MAX_PLAYERS} 项的数组。")
     players = []
     for row in rows:
-        if not isinstance(row, dict) or set(row) != {"displayName", "badge"}:
-            raise RosterError("每名玩家必须包含 displayName 和 badge 两个字段。")
-        players.append(Player(row["displayName"], row["badge"]))
+        expected_fields = {"displayName", "badge"} if schema == 1 else {"displayName", "badge", "expiresAt"}
+        if not isinstance(row, dict) or set(row) != expected_fields:
+            raise RosterError("每名玩家必须包含 displayName、badge 和 expiresAt 三个字段。" if schema == 2 else "每名玩家必须包含 displayName 和 badge 两个字段。")
+        expires_at = 0 if schema == 1 else row["expiresAt"]
+        players.append(Player(row["displayName"], row["badge"], expires_at))
     result = Roster(revision, tuple(players))
     validate_players(result.players)
     return result
@@ -112,7 +125,7 @@ def parse_roster(raw: bytes) -> Roster:
 def serialize_roster(roster: Roster) -> bytes:
     validate_players(roster.players)
     data = {"schemaVersion": SCHEMA_VERSION, "revision": roster.revision,
-            "players": [{"displayName": p.display_name, "badge": p.badge} for p in roster.players]}
+            "players": [{"displayName": p.display_name, "badge": p.badge, "expiresAt": p.expires_at} for p in roster.players]}
     raw = (json.dumps(data, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
     parse_roster(raw)
     return raw

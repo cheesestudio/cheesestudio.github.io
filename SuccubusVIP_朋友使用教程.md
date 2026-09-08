@@ -1,13 +1,13 @@
 # 魅魔社 VIP 名单管理：朋友电脑使用教程
 
-适用于 Windows 10 / 11、名单编辑器 v1.1。首次配置一次，以后打开软件就可以更新名单。不需要安装 Unity 或 Python。
+适用于 Windows 10 / 11、名单编辑器 v1.5。首次配置一次，以后打开软件就可以更新名单。不需要安装 Unity 或 Python。
 
 ## 一、先由仓库主人准备
 
 1. 让朋友注册自己的 GitHub 账号，并把 GitHub 用户名发给你。
 2. 打开仓库：https://github.com/cheesestudio/cheesestudio.github.io
 3. 进入 **Settings → Collaborators → Add people**，搜索朋友的用户名并发送邀请。朋友接受邀请后，才有提交权限。[GitHub 邀请协作者说明](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/repository-access-and-collaboration/inviting-collaborators-to-a-personal-repository)
-4. 把本教程和 `MeiMoSheVIPManager-Windows-v1.1.zip` 发给朋友。
+4. 让朋友从仓库根目录下载 `MeiMoSheVIPManager-Windows-v1.5.zip`，并把本教程一起发给他。
 
 朋友使用自己的账号登录，不需要你的密码或令牌。注意：这里授予的是仓库协作权限，覆盖整个仓库，并非只允许修改 TXT；软件自身的一键提交只更新名单。[GitHub 权限说明](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/repository-access-and-collaboration/permission-levels-for-a-personal-account-repository)
 
@@ -94,7 +94,7 @@ git config user.email "你的GitHub提交邮箱"
 
 ## 六、把软件放进仓库文件夹
 
-1. 将收到的 `MeiMoSheVIPManager-Windows-v1.1.zip` **完整解压**。
+1. 将收到的 `MeiMoSheVIPManager-Windows-v1.5.zip` **完整解压**。
 2. 打开解压后的 `MeiMoSheVIPManager` 文件夹。
 3. 把其中的 `MeiMoSheVIPManager.exe` 和整个 `_internal` 文件夹，一起复制到刚才克隆出来的 `SuccubusVIP` 文件夹。
 
@@ -131,16 +131,22 @@ SuccubusVIP\
 
 | 类别 | 徽章 |
 |---|---|
-| 1 | 粉樱初契 |
-| 2 | 月魅银辉 |
-| 3 | 绯红誓约 |
-| 4 | 鎏金契约 |
-| 5 | 幻晶星冕 |
-| 6 | 永夜魔冠 |
+| 1 | 粉桃眨眼 |
+| 2 | 月紫好梦 |
+| 3 | 薄荷欢笑 |
+| 4 | 晴蓝害羞 |
+| 5 | 蜜桃心意 |
+| 6 | 莓红调皮 |
+| 7 | 丁香蝴蝶结 |
+| 8 | 奶油可可 |
+| 9 | 珊瑚吐舌 |
+| 10 | 青瓷慵懒 |
+| 11 | 蓝紫星眸 |
+| 12 | 樱雪微笑 |
 
-`Cheese ≻v≺` 和 `艾拉贝尔ElaBlade` 当前指定使用类别 6。
+玩家当前使用的类别和有效期请以仓库里的 `SuccubusList.txt` 为准。
 
-软件会自动生成更新版本号。不要手动改 `revision`，也不要为了删除全部玩家把 TXT 清成空文件；在软件里删除后提交即可。
+软件会自动生成更新版本号。编辑玩家时可以选择永久、1/3/6/12 个月，或输入具体的 `YYYY-MM-DD` 到期日期。到期后地图会自动隐藏该玩家的头衔；选择“永久”表示永不过期。不要手动改 `revision`，也不要为了删除全部玩家把 TXT 清成空文件；在软件里删除后提交即可。
 
 ## 八、两个人一起管理时怎么避免覆盖
 
@@ -158,7 +164,7 @@ SuccubusVIP\
 
 ### 无法连接 GitHub / 443 端口超时
 
-先确认自己的电脑能正常访问 GitHub。若平时使用代理访问，请启动**你自己电脑上的代理软件**并开启系统代理。v1.1 编辑器会读取 Windows 已启用的系统代理。
+先确认自己的电脑能正常访问 GitHub。若平时使用代理访问，请启动**你自己电脑上的代理软件**并开启系统代理。v1.5 编辑器会读取 Windows 已启用的系统代理。
 
 代理地址必须是你自己的。作者使用的 `127.0.0.1:7890` 不一定适用于你的电脑。
 

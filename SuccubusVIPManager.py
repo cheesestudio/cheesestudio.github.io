@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import json
 import os
+from datetime import datetime, timedelta
 from pathlib import Path
 import queue
 import sys
 import threading
+import time
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
@@ -46,9 +48,9 @@ class RosterApp:
                 self.path = Path(settings["roster_path"])
             except (OSError, ValueError, KeyError):
                 pass
-        root.title("魅魔社 · VIP 名单管理")
-        root.geometry("1000x680")
-        root.minsize(920, 620)
+        root.title("魅魔社 · VIP 名单管理 v1.5 · 12款爱心头衔")
+        root.geometry("1120x760")
+        root.minsize(980, 650)
         root.configure(bg="#15111e")
         root.protocol("WM_DELETE_WINDOW", self.close)
         style = ttk.Style(root)
@@ -58,7 +60,9 @@ class RosterApp:
         style.configure("Card.TFrame", background="#201929")
         style.configure("TLabel", background="#15111e", foreground="#d1bfdc")
         style.configure("Title.TLabel", font=("Microsoft YaHei UI", 20, "bold"), foreground="#f7e9fa")
-        style.configure("TButton", padding=(10, 5), background="#382745", borderwidth=0)
+        style.configure("Subtitle.TLabel", font=("Microsoft YaHei UI", 9), foreground="#a58db2")
+        style.configure("Section.TLabel", font=("Microsoft YaHei UI", 12, "bold"), foreground="#f1d8fc")
+        style.configure("TButton", padding=(9, 5), background="#382745", borderwidth=0)
         style.map("TButton", background=[("active", "#60406d"), ("disabled", "#2b2333")],
                   foreground=[("disabled", "#8d7c98")])
         style.configure("Accent.TButton", background="#9a4ab5", foreground="white")
@@ -66,28 +70,44 @@ class RosterApp:
         style.configure("TEntry", fieldbackground="#2c2338", foreground="#fff2ff", insertcolor="white", padding=7)
         style.configure("TCombobox", fieldbackground="#2c2338", foreground="#fff2ff", padding=6)
         style.map("TCombobox", fieldbackground=[("readonly", "#2c2338")], foreground=[("readonly", "#fff2ff")])
-        style.configure("Treeview", background="#201929", fieldbackground="#201929", foreground="#eadff0", rowheight=34, borderwidth=0)
+        style.configure("Treeview", background="#201929", fieldbackground="#201929", foreground="#eadff0", rowheight=32, borderwidth=0)
         style.configure("Treeview.Heading", background="#342540", foreground="#ddcbe8", padding=8)
         style.map("Treeview", background=[("selected", "#674078")], foreground=[("selected", "white")])
         root.option_add("*TCombobox*Listbox.background", "#2c2338")
         root.option_add("*TCombobox*Listbox.foreground", "#fff2ff")
-        outer = ttk.Frame(root, padding=16)
+        outer = ttk.Frame(root, padding=(18, 14, 18, 12))
         outer.pack(fill="both", expand=True)
-        ttk.Label(outer, text="SUCCUBUS CLUB  /  MEMBERSHIP", foreground="#ba8bcd", font=("Segoe UI", 9)).pack(anchor="w")
+        outer.columnconfigure(0, weight=1)
+        outer.rowconfigure(5, weight=1)
+        ttk.Label(outer, text="SUCCUBUS CLUB  /  MEMBER ROSTER", foreground="#ba8bcd", font=("Segoe UI", 9)).grid(row=0, column=0, sticky="w")
         title_row = ttk.Frame(outer)
-        title_row.pack(fill="x", pady=(4, 4))
-        ttk.Label(title_row, text="魅魔社 · 名单管理", style="Title.TLabel").pack(side="left")
+        title_row.grid(row=1, column=0, sticky="ew", pady=(2, 5))
+        title_row.columnconfigure(0, weight=1)
+        title_block = ttk.Frame(title_row)
+        title_block.grid(row=0, column=0, sticky="w")
+        ttk.Label(title_block, text="魅魔社 · 名单管理", style="Title.TLabel").pack(anchor="w")
+        ttk.Label(title_block, text="维护 VRChat 显示昵称、头衔样式与有效期", style="Subtitle.TLabel").pack(anchor="w", pady=(1, 0))
         self.publish_button = self.button(title_row, "一键保存并提交 GitHub", self.publish, "Accent.TButton")
-        self.publish_button.pack(side="right")
-        self.path_label = ttk.Label(outer, text=str(self.path), foreground="#9d8ba9")
-        self.path_label.pack(anchor="w", pady=(2, 8))
-        cards = ttk.Frame(outer)
-        cards.pack(fill="x")
+        self.publish_button.grid(row=0, column=1, sticky="e", padx=(12, 0))
+        path_row = ttk.Frame(outer)
+        path_row.grid(row=2, column=0, sticky="ew", pady=(0, 5))
+        path_row.columnconfigure(0, weight=1)
+        self.path_label = ttk.Label(path_row, text=str(self.path), foreground="#9d8ba9")
+        self.path_label.grid(row=0, column=0, sticky="w")
+        path_actions = ttk.Frame(path_row)
+        path_actions.grid(row=0, column=1, sticky="e")
+        self.button(path_actions, "读取本地", self.reload_local).pack(side="left")
+        self.button(path_actions, "读取 GitHub", self.load_remote).pack(side="left", padx=7)
+        self.button(path_actions, "选择名单文件", self.choose_file).pack(side="left")
+        cards = ttk.Frame(outer, style="Card.TFrame", padding=(9, 6))
+        cards.grid(row=3, column=0, sticky="ew", pady=(0, 10))
+        for column in range(6):
+            cards.columnconfigure(column, weight=1, uniform="badges")
         self.badge_var = tk.IntVar(value=1)
         for badge, name, filename in BADGES:
             with Image.open(ASSET_DIR / filename) as image:
                 displayed = image.convert("RGBA")
-                displayed.thumbnail((70, 64), Image.Resampling.LANCZOS)
+                displayed.thumbnail((120, 44), Image.Resampling.LANCZOS)
                 photo = ImageTk.PhotoImage(displayed, master=root)
             self.preview_images.append(photo)
             card = tk.Radiobutton(cards, text=f"{badge}  {name}", image=photo, compound="top",
@@ -95,35 +115,51 @@ class RosterApp:
                                   indicatoron=False, bg="#201929", fg="#dfcbe8", selectcolor="#50305f",
                                   activebackground="#3c2749", activeforeground="white", relief="flat",
                                   font=("Microsoft YaHei UI", 9), padx=7, pady=5, cursor="hand2")
-            card.grid(row=0, column=badge-1, sticky="nsew", padx=(0, 7 if badge < 6 else 0))
-            cards.columnconfigure(badge-1, weight=1)
+            card.grid(row=(badge-1)//6, column=(badge-1)%6, sticky="ew", padx=3, pady=2)
         toolbar = ttk.Frame(outer)
-        toolbar.pack(fill="x", pady=(10, 8))
+        toolbar.grid(row=4, column=0, sticky="ew", pady=(0, 8))
+        toolbar.columnconfigure(1, weight=1)
         self.search_var = tk.StringVar()
-        ttk.Label(toolbar, text="搜索昵称").pack(side="left", padx=(0, 8))
+        ttk.Label(toolbar, text="玩家名单", style="Section.TLabel").grid(row=0, column=0, sticky="w", padx=(0, 14))
         search = ttk.Entry(toolbar, textvariable=self.search_var, width=24)
-        search.pack(side="left")
+        search.grid(row=0, column=1, sticky="ew")
+        ttk.Label(toolbar, text="搜索昵称", style="Subtitle.TLabel").grid(row=0, column=2, sticky="e", padx=(8, 0))
+        self.button(toolbar, "增加玩家", self.start_new_player, "Accent.TButton").grid(row=0, column=3, sticky="e", padx=(12, 0))
         self.search_var.trace_add("write", lambda *_: self.refresh_table())
-        self.button(toolbar, "选择名单文件", self.choose_file).pack(side="right")
-        self.button(toolbar, "读取 GitHub", self.load_remote).pack(side="right", padx=8)
-        self.button(toolbar, "读取本地", self.reload_local).pack(side="right")
         body = ttk.Frame(outer)
-        body.pack(fill="both", expand=True)
+        body.grid(row=5, column=0, sticky="nsew")
+        body.columnconfigure(0, weight=1)
+        body.rowconfigure(0, weight=1)
         table_frame = ttk.Frame(body)
-        table_frame.pack(side="left", fill="both", expand=True, padx=(0, 20))
-        self.tree = ttk.Treeview(table_frame, columns=("name", "badge"), show="headings", selectmode="browse")
+        table_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 16))
+        self.tree = ttk.Treeview(table_frame, columns=("name", "badge", "expiry"), show="headings", selectmode="browse")
         self.tree.heading("name", text="VRChat 显示昵称")
         self.tree.heading("badge", text="头顶徽章类别")
-        self.tree.column("name", width=350, minwidth=200)
-        self.tree.column("badge", width=180, minwidth=130)
+        self.tree.heading("expiry", text="有效期")
+        self.tree.column("name", width=280, minwidth=180)
+        self.tree.column("badge", width=145, minwidth=120)
+        self.tree.column("expiry", width=125, minwidth=110)
         scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
         self.tree.configure(yscrollcommand=scrollbar.set)
         scrollbar.pack(side="right", fill="y")
         self.tree.pack(fill="both", expand=True)
         self.tree.bind("<<TreeviewSelect>>", self.on_select)
-        editor = ttk.Frame(body, width=270)
-        editor.pack(side="right", fill="y")
-        editor.pack_propagate(False)
+        editor_panel = ttk.Frame(body, width=300, style="Card.TFrame", padding=10)
+        editor_panel.grid(row=0, column=1, sticky="nsew")
+        editor_panel.grid_propagate(False)
+        editor_panel.columnconfigure(0, weight=1)
+        editor_panel.rowconfigure(0, weight=1)
+        body.columnconfigure(1, weight=0, minsize=300)
+        self.editor_canvas = tk.Canvas(editor_panel, background="#201929", highlightthickness=0, width=264, height=100)
+        self.editor_canvas.grid(row=0, column=0, sticky="nsew")
+        editor_scrollbar = ttk.Scrollbar(editor_panel, orient="vertical", command=self.editor_canvas.yview)
+        editor_scrollbar.grid(row=0, column=1, sticky="ns")
+        self.editor_canvas.configure(yscrollcommand=editor_scrollbar.set)
+        editor = ttk.Frame(self.editor_canvas, style="Card.TFrame", padding=(4, 0, 4, 8))
+        editor_window = self.editor_canvas.create_window((0, 0), window=editor, anchor="nw")
+        editor.bind("<Configure>", lambda _: self.editor_canvas.configure(scrollregion=self.editor_canvas.bbox("all")))
+        self.editor_canvas.bind("<Configure>", lambda event: self.editor_canvas.itemconfigure(editor_window, width=event.width))
+        root.bind("<MouseWheel>", self.scroll_editor, add="+")
         ttk.Label(editor, text="编辑玩家", font=("Microsoft YaHei UI", 14, "bold"), foreground="#f1d8fc").pack(anchor="w", pady=(2, 8))
         ttk.Label(editor, text="显示昵称（与游戏内完全一致）").pack(anchor="w")
         self.name_var = tk.StringVar()
@@ -135,15 +171,27 @@ class RosterApp:
         self.badge_combo.current(0)
         self.badge_combo.pack(fill="x", pady=(5, 8))
         self.badge_combo.bind("<<ComboboxSelected>>", lambda _: self.badge_var.set(self.badge_combo.current()+1))
-        self.button(editor, "新增 / 更新所选玩家", self.apply_player, "Accent.TButton").pack(fill="x", pady=4)
+        ttk.Label(editor, text="有效期").pack(anchor="w")
+        self.duration_var = tk.StringVar(value="永久")
+        self.duration_combo = ttk.Combobox(editor, textvariable=self.duration_var,
+                                           values=["永久", "1个月", "3个月", "6个月", "12个月", "自定义到期日期"],
+                                           state="readonly")
+        self.duration_combo.pack(fill="x", pady=(5, 4))
+        self.duration_combo.bind("<<ComboboxSelected>>", lambda _: self.duration_changed())
+        self.expiry_date_var = tk.StringVar()
+        self.expiry_date_entry = ttk.Entry(editor, textvariable=self.expiry_date_var)
+        self.expiry_date_entry.pack(fill="x", pady=(0, 8))
+        self.apply_button = self.button(editor_panel, "保存新增 / 更新玩家", self.apply_player, "Accent.TButton")
+        self.apply_button.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(8, 0))
+        ttk.Label(editor, text="自定义日期格式：YYYY-MM-DD；永久不会过期。", foreground="#a58db2", wraplength=268).pack(anchor="w", pady=(0, 4))
         self.button(editor, "清空选择，新增另一位", self.clear_selection).pack(fill="x", pady=4)
         self.button(editor, "删除所选玩家", self.remove_player).pack(fill="x", pady=4)
         self.button(editor, "仅保存本地 TXT", self.save_local).pack(fill="x", pady=(8, 4))
-        ttk.Label(editor, text="上方图片可切换类别。\n删除并发布后会撤下对应标识。\n提交只更新 SuccubusList.txt。", wraplength=268, foreground="#a58db2", justify="left").pack(anchor="w", pady=(8, 0))
+        ttk.Label(editor, text="上方图片可切换类别。\n到期后地图自动隐藏头衔。\n提交只更新 SuccubusList.txt。", wraplength=268, foreground="#a58db2", justify="left").pack(anchor="w", pady=(8, 0))
         self.summary_var = tk.StringVar()
-        ttk.Label(outer, textvariable=self.summary_var, foreground="#c897dc").pack(anchor="w", pady=(12, 6))
+        ttk.Label(outer, textvariable=self.summary_var, foreground="#c897dc").grid(row=6, column=0, sticky="w", pady=(8, 3))
         self.status_var = tk.StringVar(value="就绪")
-        ttk.Label(outer, textvariable=self.status_var, wraplength=900).pack(anchor="w")
+        ttk.Label(outer, textvariable=self.status_var, wraplength=1020).grid(row=7, column=0, sticky="w")
         self.load_local_initial()
         if not smoke:
             root.after(100, self.poll_events)
@@ -156,6 +204,40 @@ class RosterApp:
 
     def badge_changed(self):
         self.badge_combo.current(self.badge_var.get()-1)
+
+    def scroll_editor(self, event):
+        widget = event.widget
+        while widget is not None:
+            if widget == self.editor_canvas:
+                self.editor_canvas.yview_scroll(-int(event.delta / 120), "units")
+                return "break"
+            widget = getattr(widget, "master", None)
+
+    def duration_changed(self):
+        custom = self.duration_var.get() == "自定义到期日期"
+        self.expiry_date_entry.configure(state="normal" if custom else "disabled")
+
+    @staticmethod
+    def expiry_text(expires_at):
+        if expires_at == 0:
+            return "永久"
+        suffix = "（已过期）" if expires_at <= int(time.time()) else ""
+        return datetime.fromtimestamp(expires_at).strftime("%Y-%m-%d") + suffix
+
+    def expiry_from_editor(self):
+        choice = self.duration_var.get()
+        if choice == "永久":
+            return 0
+        if choice == "自定义到期日期":
+            try:
+                value = datetime.strptime(self.expiry_date_var.get().strip(), "%Y-%m-%d")
+            except ValueError as exc:
+                raise RosterError("自定义到期日期必须是 YYYY-MM-DD，例如 2026-10-07。") from exc
+            return int((value + timedelta(days=1)).timestamp()) - 1
+        days = {"1个月": 30, "3个月": 90, "6个月": 180, "12个月": 365}
+        if choice not in days:
+            raise RosterError("请选择有效期，或选择永久。")
+        return int((datetime.now() + timedelta(days=days[choice])).timestamp())
 
     def accept_raw(self, raw, local=True):
         self.loaded = parse_roster(raw)
@@ -184,7 +266,7 @@ class RosterApp:
         for index, player in enumerate(self.players):
             if query and query not in player.display_name.casefold():
                 continue
-            self.tree.insert("", "end", iid=str(index), values=(player.display_name, f"{player.badge} · {BADGES[player.badge-1][1]}"))
+            self.tree.insert("", "end", iid=str(index), values=(player.display_name, f"{player.badge} · {BADGES[player.badge-1][1]}", self.expiry_text(player.expires_at)))
         if old_selection is not None and self.tree.exists(str(old_selection)):
             self.tree.selection_set(str(old_selection))
         self.summary_var.set(f"{len(self.players)} / 512 位玩家    ·    版本 {self.loaded.revision}" + ("    ·    有未保存改动" if self.dirty else ""))
@@ -197,21 +279,48 @@ class RosterApp:
         if index >= len(self.players):
             return
         self.selected = index
+        if hasattr(self, "apply_button"):
+            self.apply_button.configure(text="保存更新玩家")
         player = self.players[index]
         self.name_var.set(player.display_name)
         self.badge_var.set(player.badge)
         self.badge_changed()
+        if player.expires_at == 0:
+            self.duration_var.set("永久")
+            self.expiry_date_var.set("")
+        else:
+            self.duration_var.set("自定义到期日期")
+            self.expiry_date_var.set(datetime.fromtimestamp(player.expires_at).strftime("%Y-%m-%d"))
+        self.duration_changed()
 
     def clear_selection(self):
         self.selected = None
+        if hasattr(self, "apply_button"):
+            self.apply_button.configure(text="保存新增玩家")
         if hasattr(self, "tree"):
             self.tree.selection_remove(*self.tree.selection())
         self.name_var.set("")
+        self.duration_var.set("永久")
+        self.expiry_date_var.set("")
+        self.duration_changed()
+
+    def start_new_player(self):
+        if self.busy:
+            return
+        self.clear_selection()
+        self.name_entry.focus_set()
+        self.editor_canvas.yview_moveto(0)
+        self.status_var.set("请输入昵称、选择头衔和有效期，然后点击“保存新增 / 更新玩家”。")
 
     def apply_player(self):
         if self.busy:
             return
-        player = Player(self.name_var.get(), self.badge_var.get())
+        try:
+            expires_at = self.expiry_from_editor()
+        except RosterError as exc:
+            messagebox.showerror("有效期不正确", str(exc), parent=self.root)
+            return
+        player = Player(self.name_var.get(), self.badge_var.get(), expires_at)
         proposed = list(self.players)
         if self.selected is None:
             proposed.append(player)
@@ -384,10 +493,10 @@ def main():
     app = RosterApp(root, smoke=smoke)
     if smoke:
         root.update_idletasks()
-        assert len(app.preview_images) == 6
-        assert app.badge_combo["values"][5].startswith("6")
+        assert len(app.preview_images) == len(BADGES) == 12
+        assert app.badge_combo["values"][11].startswith("12")
         root.destroy()
-        print("GUI_SMOKE_OK: six artworks, editor fields, and table initialized")
+        print("GUI_SMOKE_OK: 12 artworks, scrollable editor, fixed save button, and table initialized")
         return
     root.mainloop()
 

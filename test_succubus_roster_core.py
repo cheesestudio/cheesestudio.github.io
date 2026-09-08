@@ -41,7 +41,7 @@ def test_git_retries_connection_once_but_not_authentication(monkeypatch, tmp_pat
 
 
 def test_unicode_roundtrip_and_revision():
-    initial = Roster(9000000000000, (Player('奶酪 🦇 "VIP"', 6), Player("Name With Space", 1)))
+    initial = Roster(9000000000000, (Player('奶酪 🦇 "VIP"', 6, 0), Player("Name With Space", 1, 1893455999)))
     assert parse_roster(serialize_roster(initial)) == initial
     changed = revised_roster(initial, (Player("新玩家", 2),))
     assert changed.revision > initial.revision
@@ -53,10 +53,10 @@ def test_empty_and_revocation():
 
 
 @pytest.mark.parametrize("raw", [
-    b"<html>404</html>", b'{"schemaVersion":2,"revision":1,"players":[]}',
+    b"<html>404</html>", b'{"schemaVersion":3,"revision":1,"players":[]}',
     b'{"schemaVersion":1,"revision":true,"players":[]}',
     b'{"schemaVersion":1,"revision":1,"revision":2,"players":[]}',
-    b'{"schemaVersion":1,"revision":1,"players":[{"displayName":"A","badge":7}]}',
+    b'{"schemaVersion":1,"revision":1,"players":[{"displayName":"A","badge":13}]}',
     b'{"schemaVersion":1,"revision":1,"players":[{"displayName":"A","badge":1},{"displayName":"A","badge":2}]}',
     b'{"schemaVersion":1,"revision":1,"players":[{"displayName":" A","badge":1}]}',
     b'{"schemaVersion":1,"revision":1,"players":[{"displayName":"A\\nB","badge":1}]}',
@@ -66,6 +66,26 @@ def test_empty_and_revocation():
 def test_reject_invalid_rosters(raw):
     with pytest.raises(RosterError):
         parse_roster(raw)
+
+
+def test_schema_one_is_backward_compatible_and_schema_two_serializes_expiry():
+    legacy = b'{"schemaVersion":1,"revision":4,"players":[{"displayName":"Old","badge":2}]}'
+    assert parse_roster(legacy).players == (Player("Old", 2, 0),)
+    current = serialize_roster(Roster(5, (Player("Timed", 3, 1893455999), Player("Forever", 6, 0))))
+    assert b'"schemaVersion": 2' in current
+    assert parse_roster(current).players == (Player("Timed", 3, 1893455999), Player("Forever", 6, 0))
+
+
+def test_expiry_validation():
+    with pytest.raises(RosterError):
+        serialize_roster(Roster(1, (Player("Bad", 1, -1),)))
+    with pytest.raises(RosterError):
+        parse_roster(b'{"schemaVersion":2,"revision":1,"players":[{"displayName":"Bad","badge":1,"expiresAt":true}]}')
+
+
+def test_all_twelve_badges_roundtrip_with_expiry():
+    players = tuple(Player(f"Member {badge}", badge, 0 if badge % 2 else 1893455999) for badge in range(1, 13))
+    assert parse_roster(serialize_roster(Roster(10, players))).players == players
 
 
 def test_atomic_save_preserves_external_changes(tmp_path):
