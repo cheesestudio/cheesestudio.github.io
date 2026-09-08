@@ -40,6 +40,29 @@ def test_git_retries_connection_once_but_not_authentication(monkeypatch, tmp_pat
     assert len(calls) == 3
 
 
+def test_standalone_folder_initializes_repository_and_origin(tmp_path):
+    app_folder = tmp_path / "standalone-app"
+    origin = tmp_path / "remote.git"
+    origin.mkdir()
+    git(origin, "init", "--bare", "--initial-branch=main")
+    publisher = GitPublisher(app_folder, expected_origin=str(origin))
+    publisher.verify_origin()
+    assert (app_folder / ".git").is_dir()
+    assert git(app_folder, "remote", "get-url", "origin").decode().strip() == str(origin)
+
+
+def test_standalone_folder_does_not_reuse_parent_repository(tmp_path):
+    git(tmp_path, "init", "--initial-branch=main")
+    app_folder = tmp_path / "downloads" / "manager"
+    origin = tmp_path / "remote.git"
+    origin.mkdir()
+    git(origin, "init", "--bare", "--initial-branch=main")
+    GitPublisher(app_folder, expected_origin=str(origin)).verify_origin()
+    assert (app_folder / ".git").is_dir()
+    actual_root = Path(git(app_folder, "rev-parse", "--show-toplevel").decode().strip()).resolve()
+    assert actual_root == app_folder.resolve()
+
+
 def test_unicode_roundtrip_and_revision():
     initial = Roster(9000000000000, (Player('奶酪 🦇 "VIP"', 6, 0), Player("Name With Space", 1, 1893455999)))
     assert parse_roster(serialize_roster(initial)) == initial

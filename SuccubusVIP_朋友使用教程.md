@@ -1,13 +1,13 @@
 # 魅魔社 VIP 名单管理：朋友电脑使用教程
 
-适用于 Windows 10 / 11、名单编辑器 v1.5。首次配置一次，以后打开软件就可以更新名单。不需要安装 Unity 或 Python。
+适用于 Windows 10 / 11、名单编辑器 v1.6。首次配置一次，以后打开软件就可以更新名单。不需要安装 Unity 或 Python。
 
 ## 一、先由仓库主人准备
 
 1. 让朋友注册自己的 GitHub 账号，并把 GitHub 用户名发给你。
 2. 打开仓库：https://github.com/cheesestudio/cheesestudio.github.io
 3. 进入 **Settings → Collaborators → Add people**，搜索朋友的用户名并发送邀请。朋友接受邀请后，才有提交权限。[GitHub 邀请协作者说明](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/repository-access-and-collaboration/inviting-collaborators-to-a-personal-repository)
-4. 让朋友从仓库根目录下载 `MeiMoSheVIPManager-Windows-v1.5.zip`，并把本教程一起发给他。
+4. 让朋友从仓库根目录下载 `MeiMoSheVIPManager-Windows-v1.6.zip`，并把本教程一起发给他。
 
 朋友使用自己的账号登录，不需要你的密码或令牌。注意：这里授予的是仓库协作权限，覆盖整个仓库，并非只允许修改 TXT；软件自身的一键提交只更新名单。[GitHub 权限说明](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/repository-access-and-collaboration/permission-levels-for-a-personal-account-repository)
 
@@ -50,73 +50,28 @@ gh auth status --hostname github.com
 
 如果这里出现连接超时，先按文末“无法连接 GitHub”处理，再继续。
 
-## 四、把名单仓库克隆到自己的电脑
+## 四、设置提交署名
 
-在 PowerShell 中执行：
-
-```powershell
-git clone --branch main --single-branch --depth 1 https://github.com/cheesestudio/cheesestudio.github.io.git "$env:USERPROFILE\SuccubusVIP"
-```
-
-这会在当前 Windows 用户目录下创建 `SuccubusVIP` 文件夹。例如：
-
-```text
-C:\Users\你的Windows用户名\SuccubusVIP
-```
-
-**确认克隆成功后**，再执行：
+在 PowerShell 中执行下面两条命令。把引号内文字换成自己的信息：
 
 ```powershell
-Set-Location "$env:USERPROFILE\SuccubusVIP"
-git remote get-url origin
+git config --global user.name "你的GitHub用户名"
+git config --global user.email "你的GitHub提交邮箱"
 ```
 
-显示的地址应为：
+邮箱可以使用 GitHub **Settings → Emails** 中显示的 `noreply` 隐私邮箱。这里设置的是提交署名，不是登录密码。[GitHub 提交邮箱说明](https://docs.github.com/en/account-and-profile/how-tos/email-preferences/setting-your-commit-email-address)
 
-```text
-https://github.com/cheesestudio/cheesestudio.github.io.git
-```
+## 五、解压并运行软件
 
-这里需要的是 `git clone` 得到的仓库，里面有隐藏的 `.git` 目录。只下载网页上的 ZIP、只复制 TXT，或克隆自己的 Fork，都会导致软件不能直接更新这份名单。
+1. 将 `MeiMoSheVIPManager-Windows-v1.6.zip` **完整解压**到一个普通文件夹。
+2. 打开其中的 `MeiMoSheVIPManager` 文件夹。
+3. 双击 `MeiMoSheVIPManager.exe`。
 
-如果提示 `SuccubusVIP` 文件夹已经存在，不要覆盖或删除里面的文件。若之前已经完成克隆，直接进入原文件夹；否则找仓库主人确认后换一个空目录克隆。
+不要单独复制 EXE，也不要删除 `_internal`、`SuccubusList.txt` 或稍后自动出现的隐藏 `.git` 目录。v1.6 自带名单，首次启动会在当前软件目录自动建立 Git 工作区并连接魅魔社名单仓库，不需要执行 `git clone`，也不会访问作者电脑的 `D:\Code\Git\...` 路径。
 
-## 五、设置提交署名
+如果从 v1.5 升级，请完整解压 v1.6 到新文件夹后使用，不要继续打开旧版 EXE。软件顶部应显示新文件夹内的 `SuccubusList.txt`。
 
-仍然在刚才的 `SuccubusVIP` 文件夹内，分别执行下面两条命令。把引号内文字换成自己的信息：
-
-```powershell
-git config user.name "你的GitHub用户名"
-git config user.email "你的GitHub提交邮箱"
-```
-
-邮箱可以使用 GitHub **Settings → Emails** 中显示的 `noreply` 隐私邮箱，直接完整复制那个地址。这里设置的是提交署名，不是登录密码，并且只影响当前仓库。[GitHub 提交邮箱说明](https://docs.github.com/en/account-and-profile/how-tos/email-preferences/setting-your-commit-email-address)
-
-## 六、把软件放进仓库文件夹
-
-1. 将收到的 `MeiMoSheVIPManager-Windows-v1.5.zip` **完整解压**。
-2. 打开解压后的 `MeiMoSheVIPManager` 文件夹。
-3. 把其中的 `MeiMoSheVIPManager.exe` 和整个 `_internal` 文件夹，一起复制到刚才克隆出来的 `SuccubusVIP` 文件夹。
-
-最终应是这样的结构：
-
-```text
-SuccubusVIP\
-├─ .git\                       ← 隐藏目录，不要删除
-├─ SuccubusList.txt             ← 名单
-├─ MeiMoSheVIPManager.exe       ← 双击它启动
-├─ _internal\                  ← 软件依赖，必须与 EXE 一起保留
-├─ SuccubusVIPArt\
-└─ ……其他仓库文件
-```
-
-**EXE 要和 SuccubusList.txt 在同一层，不要只把整个软件文件夹套进去。** 这样软件首次启动就会自动找到你电脑上的名单，不会使用作者电脑的 `D:\Code\Git\...` 路径。
-
-双击 `MeiMoSheVIPManager.exe`。这里使用的是免 Python 版本，不用点仓库里的 `StartSuccubusVIP.cmd`。
-
-如果软件顶部仍显示了别的路径，等待当前操作结束，点击“选择名单文件”，选择你刚才克隆的 `SuccubusVIP\SuccubusList.txt`，软件会记住它。
-
-## 七、以后每次更新名单
+## 六、以后每次更新名单
 
 1. 打开软件，点击 **“读取 GitHub”**，先载入最新名单。
 2. 新增玩家：输入 VRChat 的**显示昵称**，选择徽章类别，再点击 **“新增 / 更新所选玩家”**。
@@ -148,7 +103,7 @@ SuccubusVIP\
 
 软件会自动生成更新版本号。编辑玩家时可以选择永久、1/3/6/12 个月，或输入具体的 `YYYY-MM-DD` 到期日期。到期后地图会自动隐藏该玩家的头衔；选择“永久”表示永不过期。不要手动改 `revision`，也不要为了删除全部玩家把 TXT 清成空文件；在软件里删除后提交即可。
 
-## 八、两个人一起管理时怎么避免覆盖
+## 七、两个人一起管理时怎么避免覆盖
 
 每次准备编辑前，先点“读取 GitHub”。如果软件提示 **“GitHub 名单已被其他人修改”**，说明你编辑期间另一位管理员已经提交了：
 
@@ -160,11 +115,11 @@ SuccubusVIP\
 
 软件发布时保留本地 Git 分支，因此 Git 工具有时仍显示本地 TXT 有修改；先看软件发布结果和 GitHub 页面，不要因此反复提交或重置仓库。
 
-## 九、常见问题
+## 八、常见问题
 
 ### 无法连接 GitHub / 443 端口超时
 
-先确认自己的电脑能正常访问 GitHub。若平时使用代理访问，请启动**你自己电脑上的代理软件**并开启系统代理。v1.5 编辑器会读取 Windows 已启用的系统代理。
+先确认自己的电脑能正常访问 GitHub。若平时使用代理访问，请启动**你自己电脑上的代理软件**并开启系统代理。v1.6 编辑器会读取 Windows 已启用的系统代理。
 
 代理地址必须是你自己的。作者使用的 `127.0.0.1:7890` 不一定适用于你的电脑。
 
@@ -203,6 +158,6 @@ $env:HTTP_PROXY = $env:HTTPS_PROXY
 
 ### 怎么更新软件本身
 
-关闭旧窗口，收到新版压缩包后完整解压，再替换仓库目录里的 EXE 和 `_internal` 文件夹。保留 `.git`、`SuccubusList.txt` 和其他仓库文件。不要把自己的账号凭据或软件设置目录发给别人。
+关闭旧窗口，收到新版压缩包后完整解压到新文件夹，再运行新版 EXE。确认新版正常后可以删除整个旧版软件文件夹。不要把自己的账号凭据或 `%LOCALAPPDATA%\MeiMoSheVIPManager` 设置目录发给别人。
 
 首次配置完成后，日常操作就是：**打开软件 → 读取 GitHub → 修改表格 → 一键保存并提交 GitHub。**

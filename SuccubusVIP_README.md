@@ -1,6 +1,6 @@
-# 魅魔社 VIP 名单编辑器（v1.5）
+# 魅魔社 VIP 名单编辑器（v1.6）
 
-Windows 免安装版可直接下载仓库根目录的 `MeiMoSheVIPManager-Windows-v1.5.zip`。完整解压后运行 `MeiMoSheVIPManager.exe`，不要单独复制 EXE。
+Windows 免安装版可直接下载仓库根目录的 `MeiMoSheVIPManager-Windows-v1.6.zip`。完整解压后运行 `MeiMoSheVIPManager.exe`，不要单独复制 EXE。压缩包自带名单，首次启动会在解压目录自动初始化 Git 并连接官方名单仓库，不再依赖作者电脑路径，也不需要手工克隆仓库。
 
 双击 `StartSuccubusVIP.cmd`，或运行 `python SuccubusVIPManager.py`。源码与 `SuccubusList.txt` 放在同一个 Git 仓库目录，图片放在 `SuccubusVIPArt/`。
 
@@ -10,7 +10,7 @@ Windows 免安装版可直接下载仓库根目录的 `MeiMoSheVIPManager-Window
 py -3 -m pip install -r requirements-succubus.txt
 ```
 
-Git 需要已登录有此仓库写权限的 GitHub 账号。使用现有 Git 凭据，不需要在软件中填写令牌。免 Python 版本可使用单独提供的 Windows EXE 文件夹。
+Git 需要已登录有此仓库写权限的 GitHub 账号。使用现有 Git 凭据，不需要在软件中填写令牌。首次运行会在软件目录创建隐藏的 `.git` 目录；一键提交仍然只发布 `SuccubusList.txt`。
 
 1. 软件启动时检查远程名单；有其他人的新改动时，先点击“读取 GitHub”。
 2. 输入 VRChat **显示昵称**，包括原有大小写、空格和特殊符号；选择 1–12 类图片和有效期。选择“永久”不会过期，也可以选择月份或自定义 `YYYY-MM-DD` 到期日期。

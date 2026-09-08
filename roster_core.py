@@ -172,6 +172,23 @@ class GitPublisher:
         if not self.git:
             raise PublishError("没有找到 Git，请先安装 Git for Windows。")
 
+    def ensure_repository(self):
+        """Prepare a private local Git object store for standalone app folders."""
+        try:
+            self.repo.mkdir(parents=True, exist_ok=True)
+        except OSError as exc:
+            raise PublishError(f"无法创建名单工作目录：{self.repo}\n{exc}") from exc
+        repository = self.run("rev-parse", "--show-toplevel", check=False)
+        repository_root = repository.stdout.decode("utf-8", errors="replace").strip()
+        if repository.returncode or not repository_root or Path(repository_root).resolve() != self.repo.resolve():
+            initialized = self.run("init", "--initial-branch=main", check=False)
+            if initialized.returncode:
+                message = initialized.stderr.decode("utf-8", errors="replace").strip()
+                raise PublishError(message or f"无法在 {self.repo} 初始化 Git 工作区。")
+        origin = self.run("remote", "get-url", "origin", check=False)
+        if origin.returncode:
+            self.run("remote", "add", "origin", self.expected_origin)
+
     def run(self, *args: str, input: bytes | None = None, env: dict | None = None,
             check: bool = True) -> subprocess.CompletedProcess:
         environment = os.environ.copy()
@@ -214,6 +231,7 @@ class GitPublisher:
         return result
 
     def verify_origin(self):
+        self.ensure_repository()
         actual = self.run("remote", "get-url", "origin").stdout.decode().strip()
         if actual != self.expected_origin:
             raise PublishError("origin 与配置的名单仓库不同，已停止提交。")

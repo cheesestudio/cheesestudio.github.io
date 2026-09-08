@@ -18,8 +18,8 @@ from roster_core import (BADGES, ROSTER_FILE, GitPublisher, Player, Roster, Rost
                          serialize_roster, validate_players)
 
 APP_DIR = Path(sys.executable).parent if getattr(sys, "frozen", False) else Path(__file__).parent
-DEFAULT_PATH = APP_DIR / ROSTER_FILE if (APP_DIR / ROSTER_FILE).exists() else Path(r"D:\Code\Git\cheesestudio.github.io\SuccubusList.txt")
 STATE_DIR = Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "MeiMoSheVIPManager"
+DEFAULT_PATH = APP_DIR / ROSTER_FILE if (APP_DIR / ROSTER_FILE).exists() else STATE_DIR / "workspace" / ROSTER_FILE
 ASSET_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).parent)) / "art"
 if not ASSET_DIR.exists():
     ASSET_DIR = APP_DIR / "SuccubusVIPArt"
@@ -45,10 +45,12 @@ class RosterApp:
         if not smoke:
             try:
                 settings = json.loads((STATE_DIR / "settings.json").read_text(encoding="utf-8"))
-                self.path = Path(settings["roster_path"])
+                saved_path = Path(settings["roster_path"])
+                if saved_path.exists():
+                    self.path = saved_path
             except (OSError, ValueError, KeyError):
                 pass
-        root.title("魅魔社 · VIP 名单管理 v1.5 · 12款爱心头衔")
+        root.title("魅魔社 · VIP 名单管理 v1.6 · 12款爱心头衔")
         root.geometry("1120x760")
         root.minsize(980, 650)
         root.configure(bg="#15111e")
