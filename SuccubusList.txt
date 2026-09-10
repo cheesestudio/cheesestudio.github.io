@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "revision": 1788961813662,
+  "revision": 1789027211037,
   "players": [
     {
       "displayName": "Cheese ≻v≺",
@@ -41,6 +41,11 @@
       "displayName": "某只仓鼠酱",
       "badge": 3,
       "expiresAt": 0
+    },
+    {
+      "displayName": "有咲Arisa",
+      "badge": 12,
+      "expiresAt": 1791619208
     }
   ]
 }
