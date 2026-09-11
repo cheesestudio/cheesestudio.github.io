@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "revision": 1789107062054,
+  "revision": 1789136482383,
   "players": [
     {
       "displayName": "Cheese ≻v≺",
@@ -51,6 +51,11 @@
       "displayName": "阿雷斯特",
       "badge": 7,
       "expiresAt": 1791699058
+    },
+    {
+      "displayName": "小鳥 游六花",
+      "badge": 12,
+      "expiresAt": 1791728480
     }
   ]
 }
