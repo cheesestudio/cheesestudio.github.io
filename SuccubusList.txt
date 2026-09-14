@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "revision": 1789225796185,
+  "revision": 1789398368064,
   "players": [
     {
       "displayName": "Cheese ≻v≺",
@@ -61,6 +61,11 @@
       "displayName": "狐狸被欺负惹",
       "badge": 9,
       "expiresAt": 1791817791
+    },
+    {
+      "displayName": "三花OVO",
+      "badge": 1,
+      "expiresAt": 1791990361
     }
   ]
 }
