@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "revision": 1789399133532,
+  "revision": 1789399596313,
   "players": [
     {
       "displayName": "Cheese ≻v≺",
@@ -53,9 +53,9 @@
       "expiresAt": 1791699058
     },
     {
-      "displayName": "五更の琉璃",
-      "badge": 1,
-      "expiresAt": 1791991130
+      "displayName": "小鳥 游六花",
+      "badge": 12,
+      "expiresAt": 0
     },
     {
       "displayName": "狐狸被欺负惹",
@@ -66,6 +66,11 @@
       "displayName": "三花OVO",
       "badge": 1,
       "expiresAt": 1791990361
+    },
+    {
+      "displayName": "五更の琉璃",
+      "badge": 2,
+      "expiresAt": 1791993599
     }
   ]
 }
