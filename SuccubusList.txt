@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "revision": 1789398368064,
+  "revision": 1789398646548,
   "players": [
     {
       "displayName": "Cheese ≻v≺",
@@ -55,7 +55,7 @@
     {
       "displayName": "小鳥 游六花",
       "badge": 12,
-      "expiresAt": 1791728480
+      "expiresAt": 0
     },
     {
       "displayName": "狐狸被欺负惹",
