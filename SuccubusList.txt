@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "revision": 1789399596313,
+  "revision": 1789475227779,
   "players": [
     {
       "displayName": "Cheese ≻v≺",
@@ -13,8 +13,8 @@
       "expiresAt": 0
     },
     {
-      "displayName": "Milk'Tea",
-      "badge": 4,
+      "displayName": "某只仓鼠酱",
+      "badge": 3,
       "expiresAt": 0
     },
     {
@@ -23,13 +23,13 @@
       "expiresAt": 0
     },
     {
-      "displayName": "夕夕夕颜",
-      "badge": 1,
+      "displayName": "小子墨吖",
+      "badge": 5,
       "expiresAt": 0
     },
     {
-      "displayName": "小子墨吖",
-      "badge": 5,
+      "displayName": "夕夕夕颜",
+      "badge": 1,
       "expiresAt": 0
     },
     {
@@ -38,8 +38,8 @@
       "expiresAt": 0
     },
     {
-      "displayName": "某只仓鼠酱",
-      "badge": 3,
+      "displayName": "Milk'Tea",
+      "badge": 4,
       "expiresAt": 0
     },
     {
