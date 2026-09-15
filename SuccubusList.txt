@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "revision": 1789475830905,
+  "revision": 1789477272809,
   "players": [
     {
       "displayName": "Cheese ≻v≺",
@@ -71,6 +71,11 @@
       "displayName": "五更の琉璃",
       "badge": 2,
       "expiresAt": 1791993599
+    },
+    {
+      "displayName": "是玖璃呀",
+      "badge": 8,
+      "expiresAt": 1789574399
     }
   ]
 }
