@@ -14,7 +14,7 @@
     },
     {
       "displayName": "後藤米浴",
-      "badge": 2,
+      "badge": 12,
       "expiresAt": 0
     },
     {
