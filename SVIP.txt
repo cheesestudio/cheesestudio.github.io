@@ -24,7 +24,7 @@
     },
     {
       "displayName": "小子墨吖",
-      "badge": 12,
+      "badge": 11,
       "expiresAt": 0
     },
     {
