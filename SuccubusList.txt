@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "revision": 1789663364442,
+  "revision": 1789663448748,
   "players": [
     {
       "displayName": "Cheese ≻v≺",
@@ -24,8 +24,8 @@
     },
     {
       "displayName": "jcask",
-      "badge": 3,
-      "expiresAt": 0
+      "badge": 1,
+      "expiresAt": 1797439446
     },
     {
       "displayName": "夕夕夕颜",
