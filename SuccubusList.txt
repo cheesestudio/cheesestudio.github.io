@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "revision": 1789663448748,
+  "revision": 1789664544955,
   "players": [
     {
       "displayName": "Cheese ≻v≺",
@@ -65,7 +65,7 @@
     {
       "displayName": "三花OVO",
       "badge": 1,
-      "expiresAt": 1791990361
+      "expiresAt": 0
     },
     {
       "displayName": "五更の琉璃",
