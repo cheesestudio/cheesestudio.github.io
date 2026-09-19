@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "revision": 1789830248503,
+  "revision": 1789831754245,
   "players": [
     {
       "displayName": "Cheese ≻v≺",
@@ -81,6 +81,11 @@
       "displayName": "Chorazin",
       "badge": 1,
       "expiresAt": 1794931199
+    },
+    {
+      "displayName": "小玄baby",
+      "badge": 4,
+      "expiresAt": 1792423751
     }
   ]
 }
