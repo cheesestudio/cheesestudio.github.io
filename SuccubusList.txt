@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "revision": 1789664544955,
+  "revision": 1789830248503,
   "players": [
     {
       "displayName": "Cheese ≻v≺",
@@ -73,9 +73,9 @@
       "expiresAt": 1791993599
     },
     {
-      "displayName": "iamrixx",
-      "badge": 6,
-      "expiresAt": 1789747199
+      "displayName": "幻惘_HW",
+      "badge": 9,
+      "expiresAt": 1790006399
     },
     {
       "displayName": "Chorazin",
