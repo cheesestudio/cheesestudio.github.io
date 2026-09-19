@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "revision": 1789831754245,
+  "revision": 1789832217121,
   "players": [
     {
       "displayName": "Cheese ≻v≺",
@@ -85,7 +85,7 @@
     {
       "displayName": "小玄baby",
       "badge": 4,
-      "expiresAt": 1792423751
+      "expiresAt": 1792511999
     }
   ]
 }
