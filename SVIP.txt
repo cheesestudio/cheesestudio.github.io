@@ -3,12 +3,12 @@
   "revision": 1789548053661,
   "players": [
     {
-      "displayName": "1",
-      "badge": 1,
+      "displayName": "是玖璃呀",
+      "badge": 2,
       "expiresAt": 1791388799
     },
     {
-      "displayName": "狐狸被欺负惹",
+      "displayName": "小子墨吖",
       "badge": 1,
       "expiresAt": 0
     },
