@@ -13,8 +13,8 @@
       "expiresAt": 0
     },
     {
-      "displayName": "後藤米浴",
-      "badge": 12,
+      "displayName": "小鳥 游六花",
+      "badge": 2,
       "expiresAt": 0
     },
     {
