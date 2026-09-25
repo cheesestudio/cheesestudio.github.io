@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "revision": 1790350790646,
+  "revision": 1790350812937,
   "players": [
     {
       "displayName": "Cheese ≻v≺",
@@ -104,8 +104,8 @@
     },
     {
       "displayName": "是阿笙噢OvO",
-      "badge": 5,
-      "expiresAt": 1792942788
+      "badge": 12,
+      "expiresAt": 1792943999
     }
   ]
 }
