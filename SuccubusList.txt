@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "revision": 1790175409176,
+  "revision": 1790345112706,
   "players": [
     {
       "displayName": "Cheese ≻v≺",
@@ -96,6 +96,11 @@
       "displayName": "兮往舟Hoopweek",
       "badge": 10,
       "expiresAt": 0
+    },
+    {
+      "displayName": "yiqingqiu",
+      "badge": 10,
+      "expiresAt": 1792943999
     }
   ]
 }
