@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "revision": 1790517030048,
+  "revision": 1790772318461,
   "players": [
     {
       "displayName": "Cheese ≻v≺",
@@ -25,7 +25,7 @@
     {
       "displayName": "小子墨吖",
       "badge": 1,
-      "expiresAt": 1797439446
+      "expiresAt": 0
     },
     {
       "displayName": "夕夕夕颜",
@@ -111,6 +111,11 @@
       "displayName": "艾拉小贝贝",
       "badge": 1,
       "expiresAt": 0
+    },
+    {
+      "displayName": "言川阙可乐喵～",
+      "badge": 10,
+      "expiresAt": 1806324247
     }
   ]
 }
