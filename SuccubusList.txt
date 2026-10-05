@@ -117,5 +117,10 @@
       "badge": 10,
       "expiresAt": 1806324247
     }
+   {
+      "displayName": "Chorazin",
+      "badge": 1,
+      "expiresAt": 0
+    },
   ]
 }
