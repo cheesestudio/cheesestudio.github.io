@@ -24,12 +24,12 @@
     },
     {
       "displayName": "艾拉小贝贝",
-      "badge": 2,
+      "badge": 1,
       "expiresAt": 0
     },
     {
-      "displayName": "6",
-      "badge": 1,
+      "displayName": "MA-01",
+      "badge": 2,
       "expiresAt": 0
     },
     {
