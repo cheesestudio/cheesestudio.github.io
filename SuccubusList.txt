@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "revision": 1790772318461,
+  "revision": 1791213583263,
   "players": [
     {
       "displayName": "Cheese ≻v≺",
@@ -80,7 +80,7 @@
     {
       "displayName": "Chorazin",
       "badge": 1,
-      "expiresAt": 1794931199
+      "expiresAt": 0
     },
     {
       "displayName": "玄名无词",
@@ -113,9 +113,9 @@
       "expiresAt": 0
     },
     {
-      "displayName": "123456789",
+      "displayName": "言川阙可乐喵~",
       "badge": 10,
-      "expiresAt": 1806324247
+      "expiresAt": 1806335999
     }
   ]
 }
