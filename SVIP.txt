@@ -4,8 +4,8 @@
   "players": [
     {
       "displayName": "是玖璃呀",
-      "badge": 2,
-      "expiresAt": 1791388799
+      "badge": 1,
+      "expiresAt": 0
     },
     {
       "displayName": "小子墨吖",
@@ -18,12 +18,12 @@
       "expiresAt": 0
     },
     {
-      "displayName": "4",
+      "displayName": "艾拉贝尔ElaBlade",
       "badge": 1,
       "expiresAt": 0
     },
     {
-      "displayName": "Optionssss",
+      "displayName": "艾拉小贝贝",
       "badge": 2,
       "expiresAt": 0
     },
