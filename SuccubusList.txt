@@ -113,14 +113,9 @@
       "expiresAt": 0
     },
     {
-      "displayName": "言川阙可乐喵～",
+      "displayName": "123456789",
       "badge": 10,
       "expiresAt": 1806324247
-    }
-   {
-      "displayName": "Chorazin",
-      "badge": 1,
-      "expiresAt": 0
     }
   ]
 }
