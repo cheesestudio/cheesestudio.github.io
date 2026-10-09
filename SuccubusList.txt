@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "revision": 1791298585658,
+  "revision": 1791568477094,
   "players": [
     {
       "displayName": "Cheese ≻v≺",
@@ -126,6 +126,11 @@
       "displayName": "NeON504",
       "badge": 1,
       "expiresAt": 1793890581
+    },
+    {
+      "displayName": "没人会一直陪着我",
+      "badge": 1,
+      "expiresAt": 1796918399
     }
   ]
 }
