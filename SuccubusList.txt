@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "revision": 1791568477094,
+  "revision": 1792067066370,
   "players": [
     {
       "displayName": "Cheese ≻v≺",
@@ -50,7 +50,7 @@
     {
       "displayName": "阿雷斯特",
       "badge": 7,
-      "expiresAt": 1791699058
+      "expiresAt": 1794412799
     },
     {
       "displayName": "小鳥 游六花",
@@ -131,6 +131,11 @@
       "displayName": "没人会一直陪着我",
       "badge": 1,
       "expiresAt": 1796918399
+    },
+    {
+      "displayName": "八雲丶清姬",
+      "badge": 1,
+      "expiresAt": 1794659064
     }
   ]
 }
