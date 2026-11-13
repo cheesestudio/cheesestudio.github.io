@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "revision": 1793114242772,
+  "revision": 1794571246520,
   "players": [
     {
       "displayName": "Cheese ≻v≺",
@@ -70,7 +70,7 @@
     {
       "displayName": "五更の琉璃",
       "badge": 2,
-      "expiresAt": 1791993599
+      "expiresAt": 1794758399
     },
     {
       "displayName": "幻惘_HW",
@@ -138,9 +138,14 @@
       "expiresAt": 1794659064
     },
     {
-      "displayName": "小子墨吖1",
-      "badge": 2,
-      "expiresAt": 1795706236
+      "displayName": "AA-Negev",
+      "badge": 6,
+      "expiresAt": 1797177599
+    },
+    {
+      "displayName": "乌冬油豆腐",
+      "badge": 11,
+      "expiresAt": 0
     }
   ]
 }
