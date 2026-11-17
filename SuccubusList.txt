@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "revision": 1794571301166,
+  "revision": 1794930200181,
   "players": [
     {
       "displayName": "Cheese ≻v≺",
@@ -146,6 +146,11 @@
       "displayName": "乌冬油豆腐",
       "badge": 11,
       "expiresAt": 0
+    },
+    {
+      "displayName": "懒懒大猫猫",
+      "badge": 1,
+      "expiresAt": 1797522199
     }
   ]
 }
