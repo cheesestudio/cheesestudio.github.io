@@ -14,7 +14,7 @@
     },
     {
       "displayName": "小鳥 游六花",
-      "badge": 2,
+      "badge": 1,
       "expiresAt": 0
     },
     {
