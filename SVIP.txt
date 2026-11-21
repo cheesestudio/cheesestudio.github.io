@@ -28,7 +28,7 @@
       "expiresAt": 0
     },
     {
-      "displayName": "MA-01",
+      "displayName": "11MA-01",
       "badge": 2,
       "expiresAt": 0
     },
