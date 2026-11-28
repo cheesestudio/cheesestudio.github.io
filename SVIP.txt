@@ -38,8 +38,8 @@
       "expiresAt": 0
     },
     {
-      "displayName": "8",
-      "badge": 1,
+      "displayName": "玄名无词",
+      "badge": 11,
       "expiresAt": 0
     },
     {
