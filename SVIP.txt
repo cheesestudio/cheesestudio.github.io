@@ -39,7 +39,7 @@
     },
     {
       "displayName": "玄名无词",
-      "badge": 11,
+      "badge": 2,
       "expiresAt": 0
     },
     {
